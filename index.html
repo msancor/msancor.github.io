@@ -161,31 +161,6 @@
 										</article>
 									</div>
 								</section>
-								<section id="experience">
-									<header class="major">
-										<h2>Additional experience</h2>
-									</header>
-									<div class="scene">
-										<div class="left-zone">
-											<ul>
-												<li><a class="demo overline-from-left demo-red" onclick="currentDiv(1)">Mentee at LeadTheFuture</a></li>
-											</ul>
-										</div>
-										<div class="middle-border" style="height: 817.3px;">
-						
-										</div>
-										<div class="right-zone">
-											<section class="mySlides" id="1" style="display: block; height: 743px;">
-												<img class="icona" src="images/ghent.png" alt="">
-												<h3>Mentee at LeadTheFuture</h3>
-												<h5>Lead The Future Mentorship</h5>
-												<h5>Sep 2022 - Present </h5>
-												<p>Among the few Italian students selected to be mentees for LeadTheFuture, a leading mentorship non-profit organization for students in STEM, with acceptance rate below 20%. LeadTheFuture empowers top-performing students to achieve their goals and contribute to their communities by giving them one-on-one guidance from high-impact mentors coming from the world's leading STEM innovation hubs such as Silicon Valley and CERN.</p>
-											</section>
-										</div>
-
-									</div>
-								</section>
 						</div>
 					</div>
 
@@ -235,79 +210,6 @@
 			<script src="assets/js/breakpoints.min.js"></script>
 			<script src="assets/js/util.js"></script>
 			<script src="assets/js/main.js"></script>
-			<script>
-				var j, tmp;
-				var maxheight;
-				var slideIndex;
-
-				function getHeight_n(n) {
-					var i;
-					var x = document.getElementsByClassName("mySlides");
-					var slide_tmp;
-					
-					if (n > x.length) {slide_tmp = 1}    
-					else if (n < 1) {slide_tmp = x.length}
-					else {slide_tmp=n}
-					
-					for (i = 0; i < x.length; i++) {
-						x[i].style.display = "none";  
-					}
-					x[slide_tmp-1].style.height = "auto"; 
-					x[slide_tmp-1].style.display = "block";
-					
-					return(x[slide_tmp-1].getBoundingClientRect()['height'])
-				}
-				
-				function get_Height(){
-					maxheight_new = 0;
-					for (j = 1; j<6; j++) {
-						tmp = getHeight_n(j);
-						if (tmp>maxheight_new){maxheight_new=Math.round(tmp)};
-					}	
-					return(maxheight_new)
-				}
-				window.addEventListener('resize', () => {
-					maxheight = get_Height()
-					showDivs(slideIndex);
-				})
-
-				maxheight = get_Height()
-				showDivs(slideIndex=1);
-
-
-				// window.addEventListener('resize', () => {
-				// 	// location.reload();
-				// 	$("#right-zone").html($("#right-zone").html());
-				// })
-
-				function currentDiv(n) {
-				  showDivs(slideIndex = n);
-				}
-				
-				function showDivs(n) {
-				  var i;
-				  var tmp;
-				  var x = document.getElementsByClassName("mySlides");
-				  var dots = document.getElementsByClassName("demo");
-				  var border = document.getElementsByClassName("middle-border")
-
-				  if (n > x.length) {slideIndex = 1}    
-				  if (n < 1) {slideIndex = x.length}
-				  
-				  for (i = 0; i < x.length; i++) {
-					x[i].style.display = "none"; 
-				  }
-
-				  for (i = 0; i < dots.length; i++) {
-					dots[i].className = dots[i].className.replace(" demo-red", "");
-				  }
-				  x[slideIndex-1].style.display = "block";
-				  x[slideIndex-1].style.height = maxheight.toString()+"px"
-				  border[0].style.height = (1.1*maxheight).toString()+"px"
-				  dots[slideIndex-1].className += " demo-red";
-
-				}
-				</script>
 
 	</body>
 </html>
