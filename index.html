@@ -327,6 +327,79 @@
 			<script src="assets/js/breakpoints.min.js"></script>
 			<script src="assets/js/util.js"></script>
 			<script src="assets/js/main.js"></script>
+			<script>
+				var j, tmp;
+				var maxheight;
+				var slideIndex;
+
+				function getHeight_n(n) {
+					var i;
+					var x = document.getElementsByClassName("mySlides");
+					var slide_tmp;
+					
+					if (n > x.length) {slide_tmp = 1}    
+					else if (n < 1) {slide_tmp = x.length}
+					else {slide_tmp=n}
+					
+					for (i = 0; i < x.length; i++) {
+						x[i].style.display = "none";  
+					}
+					x[slide_tmp-1].style.height = "auto"; 
+					x[slide_tmp-1].style.display = "block";
+					
+					return(x[slide_tmp-1].getBoundingClientRect()['height'])
+				}
+				
+				function get_Height(){
+					maxheight_new = 0;
+					for (j = 1; j<6; j++) {
+						tmp = getHeight_n(j);
+						if (tmp>maxheight_new){maxheight_new=Math.round(tmp)};
+					}	
+					return(maxheight_new)
+				}
+				window.addEventListener('resize', () => {
+					maxheight = get_Height()
+					showDivs(slideIndex);
+				})
+
+				maxheight = get_Height()
+				showDivs(slideIndex=1);
+
+
+				// window.addEventListener('resize', () => {
+				// 	// location.reload();
+				// 	$("#right-zone").html($("#right-zone").html());
+				// })
+
+				function currentDiv(n) {
+				  showDivs(slideIndex = n);
+				}
+				
+				function showDivs(n) {
+				  var i;
+				  var tmp;
+				  var x = document.getElementsByClassName("mySlides");
+				  var dots = document.getElementsByClassName("demo");
+				  var border = document.getElementsByClassName("middle-border")
+
+				  if (n > x.length) {slideIndex = 1}    
+				  if (n < 1) {slideIndex = x.length}
+				  
+				  for (i = 0; i < x.length; i++) {
+					x[i].style.display = "none"; 
+				  }
+
+				  for (i = 0; i < dots.length; i++) {
+					dots[i].className = dots[i].className.replace(" demo-red", "");
+				  }
+				  x[slideIndex-1].style.display = "block";
+				  x[slideIndex-1].style.height = maxheight.toString()+"px"
+				  border[0].style.height = (1.1*maxheight).toString()+"px"
+				  dots[slideIndex-1].className += " demo-red";
+
+				}
+				</script>
 
 	</body>
 </html>
