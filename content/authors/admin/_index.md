@@ -9,7 +9,7 @@ title: Miguel Á. Sánchez-Cortés
 first_name: Miguel Ángel
 last_name: Sánchez Cortés
 
-avatar: "avatar.jpg"
+avatar: "avatar.png"
 
 # Status emoji
 #status:
