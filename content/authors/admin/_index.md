@@ -67,7 +67,7 @@ education:
       Graduated with a GPA of 110/110 with honors. During my master's thesis, I collaborated with the CENTAI Institute in Turin to study the demographic pathways through which individuals engage with alt-right and conspiracy-oriented forums on Reddit.
     button:
       text: 'Read Thesis'
-      url: 'uploads/Master_s_Thesis.pdf'
+      url: '/uploads/Master_s_Thesis.pdf'
   - area: BSc in Physics
     institution: Universidad Nacional Autónoma de México
     date_start: 2016-08-08
@@ -76,7 +76,7 @@ education:
       Graduated with a GPA of 9.5/10. During my bachelor's thesis I did a 3-month internship at the Complex Systems Institute of Ghent University, where I studied the formation of voting communities in the Eurovision Song Contest.
     button:
       text: 'Read Thesis (in Spanish)'
-      url: 'uploads/Tesis.pdf'
+      url: '/uploads/Tesis.pdf'
 work:
   - position: Data Scientist
     company_name: Vivanta
