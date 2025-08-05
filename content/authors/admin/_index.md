@@ -147,6 +147,7 @@ languages:
 ---
 ## About Me
 <div style="text-align: justify;">
+
 Hola, I'm Miguel! Currently, I am a PhD student in Network Science at the [Central European University](https://networkdatascience.ceu.edu/) and the [Complexity Science Hub](https://csh.ac.at/people/) in Vienna. I am very passionate about Complexity Science in general. In particular, I am interested in the data-driven modeling of social systems to study echo chambers, polarization, inequality, and other effects of human-Al co-evolution on social media.
 
 In the past few years I completed my BSc in Physics back in Mexico ([UNAM](https://www.fciencias.unam.mx/)) and my MSc in Data Science at the [Sapienza University of Rome](https://corsidilaurea.uniroma1.it/en/course/33519). I also worked in the private sector as a Data Scientist at [Vivanta](https://vivanta.io/). In my spare time I volunteer at [NetPLACE](https://netplace.site/). If you're interested to give a talk, please reach out or fill the [form](https://netplace.site/give-a-talk/) on the website.
