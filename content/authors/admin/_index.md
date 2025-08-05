@@ -1,17 +1,17 @@
 ---
 # Display name
-title: 吳健雄
+title: Miguel Á. Sánchez-Cortés
 
 # Name pronunciation (optional)
-name_pronunciation: Chien Shiung Wu
+#name_pronunciation: Chien Shiung Wu
 
 # Full name (for SEO)
-first_name: Shiung Wu
-last_name: Chien
+first_name: Miguel Ángel
+last_name: Sánchez Cortés
 
 # Status emoji
-status:
-  icon: ☕️
+#status:
+  #icon:
 
 # Is this the primary user of the site?
 superuser: true
@@ -20,49 +20,49 @@ superuser: true
 highlight_name: true
 
 # Role/position/tagline
-role: Chief Scientist
+role: PhD Student
 
 # Organizations/Affiliations to display in Biography blox
 organizations:
-  - name: OpenAI
-    url: https://openai.com/
+  - name: Central European University
+    url: https://www.ceu.edu/
+  - name: Complexity Science Hub
+    url: https://www.csh.ac.at/
 
 # Social network links
 # Need to use another icon? Simply download the SVG icon to your `assets/media/icons/` folder.
 profiles:
   - icon: at-symbol
-    url: 'mailto:your-email@example.com'
+    url: 'mailto:sanchezcortes.2049495@studenti.uniroma1.it'
     label: E-mail Me
   - icon: brands/x
-    url: https://twitter.com/GetResearchDev
-  - icon: brands/instagram
-    url: https://www.instagram.com/
+    url: https://twitter.com/msanchezc_
   - icon: brands/github
-    url: https://github.com/gcushen
+    url: https://github.com/msancor
   - icon: brands/linkedin
-    url: https://www.linkedin.com/
+    url: https://www.linkedin.com/in/msancor/
   - icon: academicons/google-scholar
-    url: https://scholar.google.com/
+    url: https://scholar.google.com/citations?user=ui_F3zwAAAAJ&hl=es&authuser=1
   - icon: academicons/orcid
-    url: https://orcid.org/
+    url: https://orcid.org/0009-0007-3870-546X
 
 interests:
-  - Artificial Intelligence
-  - Computational Linguistics
-  - Information Retrieval
+  - Social Networks
+  - Computational Social Science
+  - Data-Driven Modeling of Complex Systems
 
 education:
-  - area: PhD Artificial Intelligence
-    institution: Stanford University
-    date_start: 2016-01-01
-    date_end: 2020-12-31
+  - area: PhD in Network Science
+    institution: Central European University
+    date_start: 2025-09-01
+    date_end: 2029-08-31
     summary: |
       Thesis on _Why LLMs are awesome_. Supervised by [Prof Joe Smith](https://example.com). Presented papers at 5 IEEE conferences with the contributions being published in 2 Springer journals.
     button:
       text: 'Read Thesis'
       url: 'https://example.com'
-  - area: MEng Artificial Intelligence
-    institution: Massachusetts Institute of Technology
+  - area: MSc in Data Science
+    institution: Sapienza University of Rome
     date_start: 2016-01-01
     date_end: 2020-12-31
     summary: |
@@ -72,8 +72,8 @@ education:
       - lorem ipsum dolor sit amet, consectetur adipiscing elit
       - lorem ipsum dolor sit amet, consectetur adipiscing elit
       - lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - area: BSc Artificial Intelligence
-    institution: Massachusetts Institute of Technology
+  - area: BSc in Physics
+    institution: Universidad Nacional Autónoma de México
     date_start: 2016-01-01
     date_end: 2020-12-31
     summary: |
