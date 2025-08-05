@@ -57,9 +57,7 @@ education:
     date_start: 2025-09-01
     date_end: 2029-08-31
     summary: |
-    <div style="text-align: justify;">
       Member of the 2025 cohort of the [Digital Innovation School (DIS)](https://csh.ac.at/education/graduate-program/) at the Complexity Science Hub. During my PhD, I intend to study the consequences of the human-AI co-evolution on social media.
-    </div>
 
   - area: MSc in Data Science
     institution: Sapienza Università di Roma
