@@ -57,14 +57,16 @@ education:
     date_start: 2025-09-01
     date_end: 2029-08-31
     summary: |
-      Part of the 2025 cohort of the Digital Innovation School (DIS) at the Complexity Science Hub. During my PhD, I intend to study the consequences of the human-AI co-evolution on social media.
+    <div style="text-align: justify;">
+      Member of the 2025 cohort of the [Digital Innovation School (DIS)](https://csh.ac.at/education/graduate-program/) at the Complexity Science Hub. During my PhD, I intend to study the consequences of the human-AI co-evolution on social media.
+    </div>
 
   - area: MSc in Data Science
     institution: Sapienza Università di Roma
     date_start: 2023-09-25
     date_end: 2025-07-18
     summary: |
-      Graduated with a GPA of 110/110 with honors. During my master's thesis, I collaborated with the CENTAI Institute in Turin to study the demographic pathways through which individuals engage with alt-right and conspiracy-oriented forums on Reddit.
+      Graduated with a GPA of 110/110 with honors. During my master's thesis I collaborated with the [CENTAI Institute](https://centai.eu/home) in Turin to study the demographic pathways through which individuals engage with alt-right and conspiracy-oriented forums on Reddit.
     button:
       text: 'Read Thesis'
       url: '/uploads/Master_s_Thesis.pdf'
@@ -73,7 +75,7 @@ education:
     date_start: 2016-08-08
     date_end: 2021-06-25
     summary: |
-      Graduated with a GPA of 9.5/10. During my bachelor's thesis I did a 3-month internship at the Complex Systems Institute of Ghent University, where I studied the formation of voting communities in the Eurovision Song Contest.
+      Graduated with a GPA of 9.5/10. During my bachelor's thesis I did a 3-month internship at the [Complex Systems Institute](https://csi.ugent.be/) of Ghent University, where I studied the formation of voting communities in the Eurovision Song Contest.
     button:
       text: 'Read Thesis (in Spanish)'
       url: '/uploads/Tesis.pdf'
@@ -144,7 +146,10 @@ languages:
 #      I studied the foundational concept of neural networks and deep learning. By the end, I was familiar with the significant technological #trends driving the rise of deep learning; build, train, and apply fully connected deep neural networks; implement efficient (vectorized) neural #networks; identify key parameters in a neural network’s architecture; and apply deep learning to your own applications.
 ---
 ## About Me
+<div style="text-align: justify;">
+Hola, I'm Miguel! Currently, I am a PhD student in Network Science at the Central European University in Vienna. I am very passionate about Complexity Science in general. In particular, I am interested in the data-driven modeling of social systems to study echo chambers, polarization, inequality, and other effects of human-Al co-evolution on social media.
 
-Hola, I'm Miguel! Currently, I am a PhD student in Network Science at the Central European University in Vienna. I am very passionate about Complexity Science in general. In particular, I am interested in the data-driven modeling of social systems to study echo chambers, polarization, inequality, and other effects of human-Al co-evolution on social media. I like to expand my horizons and I am open to collaborate on topics that potentially can have a social impact and that can be addressed using the tools of Network Science, Machine Learning and Data Science.
+In the past few years I completed my BSc in Physics back in Mexico (UNAM) and my MSc in Data Science at the Sapienza University of Rome. I also worked in the private sector as a Data Scientist at Vivanta. In my spare time I also volunteer at [NetPLACE](https://netplace.site/). If you're interested to give a talk, please reach out or fill the [form](https://netplace.site/give-a-talk/) on the website.
 
-In the past few years I completed my BSc in Physics back in Mexico (UNAM) and my MSc in Data Science at the Sapienza University of Rome. I also worked in the private sector as a Data Scientist at Vivanta. In my spare time I also volunteer at NetPLACE. If you're interested to give a talk, please reach out or fill the form on the website.
+ I like to expand my horizons and I am open to collaborate on topics that potentially can have a social impact and that can be addressed using the tools of Network Science, Machine Learning and Data Science. Don't hesitate to write if you want to collaborate!
+</div>
