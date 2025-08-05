@@ -6,7 +6,7 @@
 # Website name
 title: Miguel Á. Sánchez-Cortés
 # Website URL
-baseURL: 'https://msancor.net/'
+baseURL: 'https://example.com/'
 
 ############################
 ## LANGUAGE
