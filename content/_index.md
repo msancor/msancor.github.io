@@ -36,6 +36,27 @@ sections:
       title: 'Publications'
       text: |-
         Coming soon 👨🏽‍💻
+  - block: resume-experience
+    id: experience
+    content:
+      username: admin
+    design:
+      # Hugo date format
+      date_format: 'January 2006'
+      # Education or Experience section first?
+      is_education_first: true
+  - block: collection
+    id: projects
+    content:
+      title: Selected Projects
+      text: I enjoy making things. Here are a selection of projects that I have worked on over the years.
+      filters:
+        folders:
+          - project
+    design:
+      view: article-grid
+      fill_image: false
+      columns: 3
   #- block: markdown
   #  content:
   #    title: '📚 My Research'
