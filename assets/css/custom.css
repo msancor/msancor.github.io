@@ -1,8 +1,0 @@
-.avatar {
-  width: 200px !important;  /* adjust as needed */
-  height: 200px !important;
-  border-radius: 50%;       /* ensure it stays circular */
-  object-fit: cover;
-  image-rendering: auto;     /* default, ensures browser scales smoothly */
-  display: block;
-}
