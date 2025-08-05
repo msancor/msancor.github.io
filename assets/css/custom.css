@@ -1,0 +1,6 @@
+.avatar {
+  width: 200px !important;  /* adjust as needed */
+  height: 200px !important;
+  border-radius: 50%;       /* ensure it stays circular */
+  object-fit: cover;
+}
