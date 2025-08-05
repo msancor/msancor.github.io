@@ -26,7 +26,7 @@ sections:
           # Add your image background to `assets/media/`.
           filename: endless-constellation.svg
           filters:
-            brightness: 0.9
+            brightness: 1
           size: cover
           position: center
           parallax: false
