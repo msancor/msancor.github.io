@@ -92,45 +92,45 @@ work:
 
 # Skills
 # Add your own SVG icons to `assets/media/icons/`
-skills:
-  - name: Technical Skills
-    items:
-      - name: Python
-        description: ''
-        percent: 80
-        icon: code-bracket
-      - name: Data Science
-        description: ''
-        percent: 100
-        icon: chart-bar
-      - name: SQL
-        description: ''
-        percent: 40
-        icon: circle-stack
-  - name: Hobbies
-    color: '#eeac02'
-    color_border: '#f0bf23'
-    items:
-      - name: Hiking
-        description: ''
-        percent: 60
-        icon: person-simple-walk
-      - name: Cats
-        description: ''
-        percent: 100
-        icon: cat
-      - name: Photography
-        description: ''
-        percent: 80
-        icon: camera
+#skills:
+#  - name: Technical Skills
+#    items:
+#      - name: Python
+#        description: ''
+#        percent: 80
+#        icon: code-bracket
+#      - name: Data Science
+#        description: ''
+#        percent: 100
+#        icon: chart-bar
+#      - name: SQL
+#        description: ''
+#        percent: 40
+#        icon: circle-stack
+#  - name: Hobbies
+#    color: '#eeac02'
+#    color_border: '#f0bf23'
+#    items:
+#      - name: Hiking
+#        description: ''
+#        percent: 60
+#        icon: person-simple-walk
+#      - name: Cats
+#        description: ''
+#        percent: 100
+#        icon: cat
+#      - name: Photography
+#        description: ''
+#        percent: 80
+#        icon: camera
 
-languages:
-  - name: Spanish (mother-tongue)
-    percent: 100
-  - name: English (certified C1)
-    percent: 100
-  - name: Italian (uncertified)
-    percent: 90
+#languages:
+#  - name: Spanish (mother-tongue)
+#    percent: 100
+#  - name: English (certified C1)
+#    percent: 100
+#  - name: Italian (uncertified)
+#    percent: 90
 
 # Awards.
 #   Add/remove as many awards below as you like.
@@ -148,9 +148,9 @@ languages:
 ## About Me
 <div style="text-align: justify;">
 
-Hola, I'm Miguel! Currently, I am a PhD student in Network Science at the [Central European University](https://networkdatascience.ceu.edu/) and the [Complexity Science Hub](https://csh.ac.at/people/) in Vienna. I am very passionate about Complexity Science in general. In particular, I am interested in the data-driven modeling of social systems to study echo chambers, polarization, inequality, and other effects of human-Al co-evolution on social media.
+Hola, I'm Miguel! 👋🏾 Currently, I am a PhD student in Network Science at the [Central European University](https://networkdatascience.ceu.edu/) and the [Complexity Science Hub](https://csh.ac.at/people/) in Vienna. I am very passionate about Complexity Science in general. In particular, I am interested in the data-driven modeling of social systems to study echo chambers, polarization, inequality, and other effects of human-Al co-evolution on social media.
 
 In the past few years I completed my BSc in Physics back in Mexico ([UNAM](https://www.fciencias.unam.mx/)) and my MSc in Data Science at the [Sapienza University of Rome](https://corsidilaurea.uniroma1.it/en/course/33519). I also worked in the private sector as a Data Scientist at [Vivanta](https://vivanta.io/). In my spare time I volunteer at [NetPLACE](https://netplace.site/). If you're interested to give a talk, please reach out or fill the [form](https://netplace.site/give-a-talk/) on the website.
 
- I like to expand my horizons and I am open to collaborate on topics that potentially can have a social impact and that can be addressed using the tools of Network Science, Machine Learning and Data Science. Don't hesitate to write if you want to collaborate!
+ I like to expand my horizons and I am open to collaborate on topics that potentially can have a social impact and that can be addressed using the tools of Network Science, Machine Learning and Data Science. Don't hesitate to write if you want to collaborate! 🤓
 </div>
