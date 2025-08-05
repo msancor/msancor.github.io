@@ -1,0 +1,14 @@
+/* Apply inversion filter to background in dark mode */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: -1;
+  background: url('/media/stacked-peaks.svg') center/cover no-repeat;
+  transition: filter 0.3s ease;
+}
+
+/* Invert the background in dark mode */
+.dark body::before {
+  filter: invert(1) hue-rotate(180deg);
+}
