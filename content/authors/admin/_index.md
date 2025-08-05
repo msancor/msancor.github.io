@@ -134,15 +134,15 @@ languages:
 #   Add/remove as many awards below as you like.
 #   Only `title`, `awarder`, and `date` are required.
 #   Begin multi-line `summary` with YAML's `|` or `|2-` multi-line prefix and indent 2 spaces below.
-awards:
-  - title: Neural Networks and Deep Learning
-    url: https://www.coursera.org/learn/neural-networks-deep-learning
-    date: '2023-11-25'
-    awarder: Coursera
-    icon: coursera
-    summary: |
-      I studied the foundational concept of neural networks and deep learning. By the end, I was familiar with the significant technological #trends driving the rise of deep learning; build, train, and apply fully connected deep neural networks; implement efficient (vectorized) neural #networks; identify key parameters in a neural network’s architecture; and apply deep learning to your own applications.
-
+#awards:
+#  - title: Neural Networks and Deep Learning
+#    url: https://www.coursera.org/learn/neural-networks-deep-learning
+#    date: '2023-11-25'
+#    awarder: Coursera
+#    icon: coursera
+#    summary: |
+#      I studied the foundational concept of neural networks and deep learning. By the end, I was familiar with the significant technological #trends driving the rise of deep learning; build, train, and apply fully connected deep neural networks; implement efficient (vectorized) neural #networks; identify key parameters in a neural network’s architecture; and apply deep learning to your own applications.
+---
 ## About Me
 
 Hola, I'm Miguel! Currently, I am a PhD student in Network Science at the Central European University in Vienna. I am very passionate about Complexity Science in general. In particular, I am interested in the data-driven modeling of social systems to study echo chambers, polarization, inequality, and other effects of human-Al co-evolution on social media. I like to expand my horizons and I am open to collaborate on topics that potentially can have a social impact and that can be addressed using the tools of Network Science, Machine Learning and Data Science.
