@@ -57,55 +57,36 @@ education:
     date_start: 2025-09-01
     date_end: 2029-08-31
     summary: |
-      Thesis on _Why LLMs are awesome_. Supervised by [Prof Joe Smith](https://example.com). Presented papers at 5 IEEE conferences with the contributions being published in 2 Springer journals.
+      Part of the 2025 cohort of the Digital Innovation School (DIS) at the Complexity Science Hub. During my PhD, I intend to study the consequences of the human-AI co-evolution on social media.
+
+  - area: MSc in Data Science
+    institution: Sapienza Università di Roma
+    date_start: 2023-09-25
+    date_end: 2025-07-18
+    summary: |
+      Graduated with a GPA of 110/110 with honors. During my master's thesis, I collaborated with the CENTAI Institute in Turin to study the demographic pathways through which individuals engage with alt-right and conspiracy-oriented forums on Reddit.
     button:
       text: 'Read Thesis'
-      url: 'https://example.com'
-  - area: MSc in Data Science
-    institution: Sapienza University of Rome
-    date_start: 2016-01-01
-    date_end: 2020-12-31
-    summary: |
-      GPA: 3.8/4.0
-
-      Courses included:
-      - lorem ipsum dolor sit amet, consectetur adipiscing elit
-      - lorem ipsum dolor sit amet, consectetur adipiscing elit
-      - lorem ipsum dolor sit amet, consectetur adipiscing elit
+      url: 'uploads/Master_s_Thesis.pdf'
   - area: BSc in Physics
     institution: Universidad Nacional Autónoma de México
-    date_start: 2016-01-01
-    date_end: 2020-12-31
+    date_start: 2016-08-08
+    date_end: 2021-06-25
     summary: |
-      GPA: 3.4/4.0
-      
-      Courses included:
-      - lorem ipsum dolor sit amet, consectetur adipiscing elit
-      - lorem ipsum dolor sit amet, consectetur adipiscing elit
-      - lorem ipsum dolor sit amet, consectetur adipiscing elit
+      Graduated with a GPA of 9.5/10. During my bachelor's thesis I did a 3-month internship at the Complex Systems Institute of Ghent University, where I studied the formation of voting communities in the Eurovision Song Contest.
+    button:
+      text: 'Read Thesis (in Spanish)'
+      url: 'uploads/Tesis.pdf'
 work:
-  - position: Director of Cloud Infrastructure
-    company_name: GenCoin
-    company_url: ''
+  - position: Data Scientist
+    company_name: Vivanta
+    company_url: 'https://vivanta.io/'
     company_logo: ''
-    date_start: 2021-01-01
-    date_end: ''
-    summary: |2-
-      Responsibilities include:
-      - lorem ipsum dolor sit amet, consectetur adipiscing elit
-      - lorem ipsum dolor sit amet, consectetur adipiscing elit
-      - lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - position: Backend Software Engineer
-    company_name: X
-    company_url: ''
-    company_logo: ''
-    date_start: 2016-01-01
-    date_end: 2020-12-31
+    date_start: 2022-03-07
+    date_end: '2024-10-25'
     summary: |
-      Responsibilities include:
-      - Migrated infrastructure to a new data center
-      - lorem ipsum dolor sit amet, consectetur adipiscing elit
-      - lorem ipsum dolor sit amet, consectetur adipiscing elit
+      Member of the founding team and lead data scientist. Among my tasks were developing Data Science & Machine Learning projects to gain insights from wearable data and performing successful onboarding for clients to the Vivanta environment.
+      
 
 # Skills
 # Add your own SVG icons to `assets/media/icons/`
@@ -142,45 +123,28 @@ skills:
         icon: camera
 
 languages:
-  - name: English
+  - name: Spanish (mother-tongue)
     percent: 100
-  - name: Chinese
-    percent: 75
-  - name: Portuguese
-    percent: 25
+  - name: English (certified C1)
+    percent: 100
+  - name: Italian (uncertified)
+    percent: 90
 
 # Awards.
 #   Add/remove as many awards below as you like.
 #   Only `title`, `awarder`, and `date` are required.
 #   Begin multi-line `summary` with YAML's `|` or `|2-` multi-line prefix and indent 2 spaces below.
-awards:
-  - title: Neural Networks and Deep Learning
-    url: https://www.coursera.org/learn/neural-networks-deep-learning
-    date: '2023-11-25'
-    awarder: Coursera
-    icon: coursera
-    summary: |
-      I studied the foundational concept of neural networks and deep learning. By the end, I was familiar with the significant technological trends driving the rise of deep learning; build, train, and apply fully connected deep neural networks; implement efficient (vectorized) neural networks; identify key parameters in a neural network’s architecture; and apply deep learning to your own applications.
-  - title: Blockchain Fundamentals
-    url: https://www.edx.org/professional-certificate/uc-berkeleyx-blockchain-fundamentals
-    date: '2023-07-01'
-    awarder: edX
-    icon: edx
-    summary: |
-      Learned:
-      - Synthesize your own blockchain solutions
-      - Gain an in-depth understanding of the specific mechanics of Bitcoin
-      - Understand Bitcoin’s real-life applications and learn how to attack and destroy Bitcoin, Ethereum, smart contracts and Dapps, and alternatives to Bitcoin’s Proof-of-Work consensus algorithm
-  - title: 'Object-Oriented Programming in R'
-    url: https://www.datacamp.com/courses/object-oriented-programming-with-s3-and-r6-in-r
-    certificate_url: https://www.datacamp.com
-    date: '2023-01-21'
-    awarder: datacamp
-    icon: datacamp
-    summary: |
-      Object-oriented programming (OOP) lets you specify relationships between functions and the objects that they can act on, helping you manage complexity in your code. This is an intermediate level course, providing an introduction to OOP, using the S3 and R6 systems. S3 is a great day-to-day R programming tool that simplifies some of the functions that you write. R6 is especially useful for industry-specific analyses, working with web APIs, and building GUIs.
----
+#awards:
+#  - title: Neural Networks and Deep Learning
+#    url: https://www.coursera.org/learn/neural-networks-deep-learning
+#    date: '2023-11-25'
+#    awarder: Coursera
+#    icon: coursera
+#    summary: |
+#      I studied the foundational concept of neural networks and deep learning. By the end, I was familiar with the significant technological #trends driving the rise of deep learning; build, train, and apply fully connected deep neural networks; implement efficient (vectorized) neural #networks; identify key parameters in a neural network’s architecture; and apply deep learning to your own applications.
 
 ## About Me
 
-Chien Shiung Wu is a professor of artificial intelligence at the Stanford AI Lab. Her research interests include distributed robotics, mobile computing and programmable matter. She leads the Robotic Neurobiology group, which develops self-reconfiguring robots, systems of self-organizing robots, and mobile sensor networks.
+Hola, I'm Miguel! Currently, I am a PhD student in Network Science at the Central European University in Vienna. I am very passionate about Complexity Science in general. In particular, I am interested in the data-driven modeling of social systems to study echo chambers, polarization, inequality, and other effects of human-Al co-evolution on social media. I like to expand my horizons and I am open to collaborate on topics that potentially can have a social impact and that can be addressed using the tools of Network Science, Machine Learning and Data Science.
+
+In the past few years I completed my BSc in Physics back in Mexico (UNAM) and my MSc in Data Science at the Sapienza University of Rome. I also worked in the private sector as a Data Scientist at Vivanta. In my spare time I also volunteer at NetPLACE. If you're interested to give a talk, please reach out or fill the form on the website.
