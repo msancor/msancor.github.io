@@ -61,4 +61,4 @@ features:
 
 params:
   profile:
-    avatar: "media/avatar.jpg"
+    avatar: "/media/avatar.jpg"
