@@ -1,7 +1,7 @@
 ---
 title: Error and Attack Tolerance of Complex Networks
 external_link: https://github.com/msancor/Net-Tolerance
-date: 2025-08-05
+date: 2025-02-06
 tags:
   - Scale-free Networks
   - Network Robustness
