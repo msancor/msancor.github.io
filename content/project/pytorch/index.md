@@ -1,13 +1,13 @@
 ---
-title: PyTorch
-date: 2023-10-26
-external_link: https://github.com/pytorch/pytorch
+title: Error and Attack Tolerance of Complex Networks
+date: 2025-02-01
+external_link: https://github.com/msancor/Net-Tolerance
 tags:
-  - Hugo
-  - Wowchemy
-  - Markdown
+  - Scale-free Networks
+  - Network Robustness
+  - Network Science
 ---
 
-PyTorch is a Python package that provides tensor computation (like NumPy) with strong GPU acceleration.
+Didactic project to study the robustness of scale-free networks.
 
 <!--more-->

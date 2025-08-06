@@ -7,6 +7,6 @@ tags:
   - Recommendation Systems
 ---
 
-We study the effect of link recommenders on emergent phenomena like popularity bias, the echo chamber effect and polarization on networks.
+We study the effect of link recommenders on emergent phenomena like popularity bias and polarization on networks.
 
 <!--more-->

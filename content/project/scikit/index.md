@@ -1,13 +1,13 @@
 ---
-title: scikit-learn
-date: 2023-10-26
-external_link: https://github.com/scikit-learn/scikit-learn
+title: Graph Coloring with Physics-Inspired Graph Neural Networks
+date: 2023-08-01
+external_link: https://github.com/msancor/graph-coloring-gnn
 tags:
-  - Hugo
-  - Wowchemy
-  - Markdown
+  - Graph Coloring Problem
+  - Graph Neural Networks
+  - Statistical Physics
 ---
 
-scikit-learn is a Python module for machine learning built on top of SciPy and is distributed under the 3-Clause BSD license.
+We solve the Graph Coloring Problem using GNNs and the Potts model.
 
 <!--more-->

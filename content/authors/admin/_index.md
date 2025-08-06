@@ -124,13 +124,13 @@ work:
 #        percent: 80
 #        icon: camera
 
-#languages:
-#  - name: Spanish (mother-tongue)
-#    percent: 100
-#  - name: English (certified C1)
-#    percent: 100
-#  - name: Italian (uncertified)
-#    percent: 90
+languages:
+  - name: Spanish (mother-tongue)
+    percent: 100
+  - name: English (certified C1)
+    percent: 100
+  - name: Italian (uncertified)
+    percent: 90
 
 # Awards.
 #   Add/remove as many awards below as you like.

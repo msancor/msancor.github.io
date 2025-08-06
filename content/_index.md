@@ -39,6 +39,10 @@ sections:
       date_format: 'January 2006'
       # Education or Experience section first?
       is_education_first: true
+  - block: resume-languages
+    content:
+      title: Languages
+      username: admin
   - block: collection
     id: projects
     content:
@@ -49,11 +53,12 @@ sections:
           - project
     design:
       date_format: 'January 2006'
+      date_field: date
       view: article-grid
       fill_image: false
       columns: 3
   - block: markdown
-    id: papers
+    id: publications
     content:
       title: 'Publications'
       text: |-
