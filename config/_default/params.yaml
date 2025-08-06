@@ -58,5 +58,3 @@ features:
     enable: false
   privacy_pack:
     enable: false
-
-favicon : "media/icon/favicon.png"
