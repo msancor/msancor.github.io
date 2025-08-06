@@ -1,6 +1,5 @@
 ---
 title: Graph Coloring with Physics-Inspired Graph Neural Networks
-date: 2023-08-01
 external_link: https://github.com/msancor/graph-coloring-gnn
 tags:
   - Graph Coloring Problem

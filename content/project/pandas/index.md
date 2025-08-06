@@ -1,6 +1,5 @@
 ---
 title: The Effect of Friend Recommenders on the Formation of Echo Chambers and Polarization in Social Networks
-date: 2024-08-01
 external_link: https://github.com/msancor/RecSystemsSN
 tags:
   - Social Networks

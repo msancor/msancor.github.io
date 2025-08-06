@@ -52,8 +52,6 @@ sections:
         folders:
           - project
     design:
-      date_format: 'January 2006'
-      date_field: date
       view: article-grid
       fill_image: false
       columns: 3
