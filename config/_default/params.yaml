@@ -8,8 +8,6 @@ appearance:
   mode: system
   color: emerald
 
-favicon: "favicon.png"
-
 # SEO
 marketing:
   seo:
@@ -51,8 +49,8 @@ footer:
 
 # Localization
 locale:
-  date_format: 'Aug 5, 2025'
-  time_format: '12:05 PM'
+  date_format: 'Jan 2, 2006'
+  time_format: '3:04 PM'
 
 # Site features
 features:
