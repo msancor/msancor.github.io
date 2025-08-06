@@ -30,12 +30,6 @@ sections:
           size: cover
           position: center
           parallax: false
-  - block: markdown
-    id: papers
-    content:
-      title: 'Publications'
-      text: |-
-        Coming soon 👨🏽‍💻
   - block: resume-experience
     id: experience
     content:
@@ -57,6 +51,12 @@ sections:
       view: article-grid
       fill_image: false
       columns: 3
+  - block: markdown
+    id: papers
+    content:
+      title: 'Publications'
+      text: |-
+        Coming soon 👨🏽‍💻
   #- block: markdown
   #  content:
   #    title: '📚 My Research'
