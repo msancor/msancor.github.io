@@ -44,7 +44,7 @@ profiles:
   - icon: brands/linkedin
     url: https://www.linkedin.com/in/msancor/
   - icon: academicons/google-scholar
-    url: https://scholar.google.com/citations?user=ui_F3zwAAAAJ&hl=es&authuser=1
+    url: https://scholar.google.com/citations?user=czuxSF4AAAAJ&hl=en
   - icon: academicons/orcid
     url: https://orcid.org/0009-0007-3870-546X
 
