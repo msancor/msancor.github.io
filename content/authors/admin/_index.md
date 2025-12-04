@@ -66,19 +66,19 @@ education:
     date_start: 2023-09-25
     date_end: 2025-07-18
     summary: |
-      Graduated with a GPA of 110/110 with honors. During my master's thesis I collaborated with the [CENTAI Institute](https://centai.eu/home) in Turin to study the demographic pathways through which individuals engage with alt-right and conspiracy-oriented forums on Reddit.
-    button:
-      text: 'Read Thesis'
-      url: '/uploads/Master_s_Thesis.pdf'
+      Graduated with a GPA of 110/110 with honors. During my master's thesis I collaborated with the [CENTAI Institute](https://centai.eu/home) in Turin to study the demographics of individuals which engage with alt-right and conspiracy-oriented forums on Reddit.
+    #button:
+      #text: 'Read Thesis'
+      #url: '/uploads/Master_s_Thesis.pdf'
   - area: BSc in Physics
     institution: Universidad Nacional Autónoma de México
     date_start: 2016-08-08
     date_end: 2021-06-25
     summary: |
       Graduated with a GPA of 9.5/10. During my bachelor's thesis I did a 3-month internship at the [Complex Systems Institute](https://csi.ugent.be/) of Ghent University, where I studied the formation of voting communities in the Eurovision Song Contest.
-    button:
-      text: 'Read Thesis (in Spanish)'
-      url: '/uploads/Tesis.pdf'
+    #button:
+      #text: 'Read Thesis (in Spanish)'
+      #url: '/uploads/Tesis.pdf'
 work:
   - position: Data Scientist
     company_name: Vivanta
