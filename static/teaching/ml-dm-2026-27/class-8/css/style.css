@@ -227,7 +227,7 @@ kbd { font-family: var(--mono); font-size: .8em; background: var(--surface); bor
 .embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .embed .loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: .9rem; }
 .hands-on { display: grid; gap: 1rem; flex: 1; min-height: 0; }
-.hands-on { grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr); }
+.hands-on { grid-template-columns: minmax(0, 1fr) minmax(14rem, 18rem); }
 .hands-on.wide { grid-template-columns: minmax(0, 1fr); }
 .hands-on.wide .side { display: none; }
 .slide.fullw { padding-left: 1rem; padding-right: 1rem; }
@@ -385,3 +385,9 @@ table.t.cmp td:first-child { font-weight: 800; white-space: nowrap; }
   .stages { grid-template-columns: minmax(0, 1fr); } .sarrow { display: none; }
   .refs { column-count: 1; }
 }
+
+/* figures with attribution */
+.fig { margin: 0; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: .8rem; text-align: center; }
+.fig img { max-height: 58vh; max-width: 100%; width: auto; height: auto; }
+.fig figcaption { font-size: .66rem; color: var(--muted); margin-top: .4rem; line-height: 1.4; text-align: left; }
+.slide.fullw .hands-on.wide .embed { min-height: 30rem; }

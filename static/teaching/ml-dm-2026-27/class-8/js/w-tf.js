@@ -70,7 +70,7 @@
       <div class="grid g-side-r" style="align-items:start">
         <div>
           <canvas id="at-cv" class="cv" style="cursor:crosshair"></canvas>
-          <div class="tiny" style="margin-top:.25rem">Left: the plane in which queries and keys live. <b>Drag</b> the tip of the query arrow. ★ = the weighted mix of the values.</div>
+          <div class="tiny" style="margin-top:.25rem">Left: a toy map of the words. <b>Drag</b> the tip of the arrow (what this word is looking for). ★ = the blended result.</div>
         </div>
         <div>
           <div class="small" style="margin-bottom:.3rem">Pick the word that is “asking” (its <b>query</b>):</div>
@@ -110,9 +110,9 @@
           a.setAttribute('fill', 'none'); a.setAttribute('stroke', COL[i]); a.setAttribute('stroke-width', 1 + 11 * w[i]); a.setAttribute('opacity', .2 + .75 * w[i]); a.setAttribute('stroke-linecap', 'round'); arcs.appendChild(a);
         }
       });
-      $('#at-tab').innerHTML = '<tr><th>token (key)</th><th>score q·k/√d</th><th>weight = softmax</th></tr>' + T.map((t, i) => `<tr><td><span style="color:${COL[i]};font-weight:800">●</span> ${t}</td><td class="mono">${s[i].toFixed(2)}</td><td><div style="display:flex;align-items:center;gap:.4rem"><div style="height:.7rem;border-radius:4px;background:${COL[i]};width:${Math.max(1, w[i] * 100)}%;max-width:70%"></div><b class="mono">${w[i].toFixed(2)}</b></div></td></tr>`).join('');
+      $('#at-tab').innerHTML = '<tr><th>word</th><th>match score</th><th>attention weight</th></tr>' + T.map((t, i) => `<tr><td><span style="color:${COL[i]};font-weight:800">●</span> ${t}</td><td class="mono">${s[i].toFixed(2)}</td><td><div style="display:flex;align-items:center;gap:.4rem"><div style="height:.7rem;border-radius:4px;background:${COL[i]};width:${Math.max(1, w[i] * 100)}%;max-width:70%"></div><b class="mono">${w[i].toFixed(2)}</b></div></td></tr>`).join('');
       const top = w.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0])[0];
-      $('#at-msg').innerHTML = `New representation of “<b>${T[sel]}</b>” = Σ weight × value = <b class="mono">(${out[0].toFixed(2)}, ${out[1].toFixed(2)})</b> (★): mostly “${T[top[1]]}” (${Math.round(top[0] * 100)}%). The word’s meaning is now <b>contextual</b>.`;
+      $('#at-msg').innerHTML = `“<b>${T[sel]}</b>” now carries a blend of the other words, weighted by attention (★): mostly “${T[top[1]]}” (${Math.round(top[0] * 100)}%). Its meaning has become <b>contextual</b>.`;
       const tk = $('#at-tok'); if (!tk.children.length) T.forEach((t, i) => { const b = document.createElement('button'); b.className = 'btn small'; b.textContent = t; b.addEventListener('click', () => { sel = i; draw(); }); tk.appendChild(b); });
       Array.from(tk.children).forEach((b, i) => b.classList.toggle('on', i === sel));
     }
@@ -139,7 +139,7 @@
         <div>
           <label class="ctl"><span>Temperature T = <span class="val" id="lm-tv">1.0</span> <span class="tiny">(low = safe &amp; repetitive · high = random)</span></span><input type="range" id="lm-t" min="0.2" max="2" step="0.1" value="1"></label>
           <div class="row mt"><button class="btn primary" id="lm-go">Sample next token</button><button class="btn small" id="lm-10">×10</button><button class="btn small" id="lm-reset">Reset</button></div>
-          <div class="callout mt" style="font-size:.9rem">This toy sees <b>only the previous token</b> (a bigram table counted from a 111-token text). GPT-3 conditions on up to <b>2,048</b> tokens with a transformer — but the <b>loop is the same</b>: distribution → sample → append → repeat.</div>
+          <div class="callout mt" style="font-size:.9rem">This toy looks <b>only at the previous word</b> (a table counted from a 111-word text). A real model looks at the whole conversation so far, but the <b>loop is the same</b>: predict → pick → append → repeat.</div>
         </div>
       </div>`;
     const $ = (s) => root.querySelector(s);

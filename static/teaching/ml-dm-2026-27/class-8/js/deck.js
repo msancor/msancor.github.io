@@ -3,18 +3,18 @@
 (function () {
   'use strict';
 
-  // Planned minutes per section (sums to 80 min; leaves ~10 min of buffer in a 90-min slot).
+  // Planned minutes per section. First half (before the break) = 48 min of talking;
+  // total 82 min including a 10-minute break, which leaves ~8 min of buffer in a 90-min slot.
   const SECTIONS = [
-    { id: 'start',    label: 'Storyline',      min: 2 },
-    { id: 'mlp',      label: 'MLP & depth',    min: 9 },
-    { id: 'why',      label: 'Why CNNs',       min: 6 },
-    { id: 'cnn',      label: 'How CNNs work',  min: 16 },
-    { id: 'ae',       label: 'Autoencoders',   min: 10 },
-    { id: 'gan',      label: 'GANs',           min: 11 },
-    { id: 'seq',      label: 'Sequences',      min: 8 },
-    { id: 'tf',       label: 'Transformers',   min: 16 },
-    { id: 'wrap',     label: 'Synthesis',      min: 2 },
-    { id: 'appendix', label: 'Appendix',       min: 0, hidden: true },
+    { id: 'start',  label: 'Storyline',      min: 2 },
+    { id: 'mlp',    label: 'MLP & depth',    min: 8 },
+    { id: 'why',    label: 'Images → CNNs',  min: 9 },
+    { id: 'cnn',    label: 'How CNNs work',  min: 17 },
+    { id: 'ae',     label: 'Autoencoders',   min: 12 },
+    { id: 'break',  label: 'Break',          min: 10 },
+    { id: 'gan',    label: 'GANs',           min: 10 },
+    { id: 'beyond', label: 'RNNs & transformers', min: 12 },
+    { id: 'wrap',   label: 'Synthesis',      min: 2 },
   ];
 
   const $ = (s, r) => (r || document).querySelector(s);
