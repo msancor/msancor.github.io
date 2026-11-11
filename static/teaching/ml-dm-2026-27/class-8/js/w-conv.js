@@ -41,10 +41,10 @@
       </div>
 
       <div class="card flat" style="padding:.8rem .9rem">
-        <div class="cap" style="margin:0 0 .3rem;text-align:left">② FILTER <span class="tiny" style="font-weight:500">— 3×3 = 9 learnable numbers</span></div>
+        <div class="cap" style="margin:0 0 .3rem;text-align:left">② FILTER <span class="tiny" style="font-weight:500">— 3×3 = 9 numbers</span></div>
         <div class="kgrid" id="cv-k"></div>
         <div class="tiny" style="margin-top:.35rem">Orange = positive weight · blue = negative</div>
-        <div class="row" style="gap:.35rem;margin-top:.6rem">
+        <div class="row" id="cv-opts" style="gap:.35rem;margin-top:.6rem">
           <button class="btn small" id="cv-relu">ReLU: off</button>
           <button class="btn small" id="cv-pool">Max-pool: off</button>
           <button class="btn small" id="cv-nums">Numbers: off</button>
@@ -78,6 +78,8 @@
     </div>`;
 
   const $ = (s) => root.querySelector(s);
+  const BASIC = root.dataset.mode === 'basic';
+  if (BASIC) { $('#cv-opts').style.display = 'none'; }
   const cin = $('#cv-in'), cout = $('#cv-out'), cpl = $('#cv-pl');
   let img = fromAscii(SEVEN), ker = PRESETS[1].k.slice();
   let relu = false, pool = false, nums = false, tool = 'draw', hov = null, cell = 24, timer = null, drawing = false, last = null;
@@ -260,6 +262,6 @@
     timer = setInterval(() => { hov = { r: Math.floor(n / OUT), c: n % OUT }; redraw(); n = (n + 1) % (OUT * OUT); }, 55);
   });
 
-  Deck.on('convlab', (s, resized) => { if (!resized) stopPlay(); redraw(); });
+  Deck.on('filter', (s, resized) => { if (!resized) stopPlay(); redraw(); });
   compute(); redraw();
 })();

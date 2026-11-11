@@ -5,7 +5,7 @@
 
   const N0 = 16, MAXL = 5;
   const T = { conv: { k: 3, s: 1, name: 'Conv 3×3' }, pool: { k: 2, s: 2, name: 'Pool 2×2' } };
-  let layers = ['conv', 'conv', 'conv'];
+  let layers = ['conv', 'conv'];
   let sel = null;            // {l, r, c}
   let digit = 0;
   let geo = null;            // layout for hit-testing
@@ -20,6 +20,7 @@
       <span class="spacer"></span>
       <span class="small">Click any unit in any layer ➜ see what it “looks at” in the image.</span>
     </div>
+    <div class="tiny" style="margin-bottom:.3rem"><b style="color:#e8712d">■</b> the unit you clicked &nbsp; <b style="color:#2859e0">■</b> everything it is computed from, going back to the image</div>
     <div class="card flat" style="padding:.6rem .7rem;overflow-x:auto"><canvas id="rf-cv"></canvas></div>
     <div class="grid g-side mt" style="align-items:stretch">
       <div class="stat" style="display:flex;gap:1.2rem;align-items:center">
@@ -58,7 +59,7 @@
       geo.push({ x, y: y0, n, cell });
       // header
       ctx.fillStyle = '#3d4856'; ctx.font = '700 11px system-ui,sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-      ctx.fillText(l === 0 ? 'INPUT' : T[layers[l - 1]].name.toUpperCase(), x, 13);
+      ctx.fillText(l === 0 ? 'IMAGE' : 'LAYER ' + l + ' · ' + T[layers[l - 1]].name.toUpperCase(), x, 13);
       ctx.fillStyle = '#667180'; ctx.font = '600 11px system-ui,sans-serif'; ctx.fillText(n + ' × ' + n, x, 27);
       for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
         if (l === 0) { ctx.fillStyle = U.ink(D.X[digit * 64 + Math.floor(r / 2) * 8 + Math.floor(c / 2)]); }
@@ -84,14 +85,15 @@
     const q0 = rng[0], side = q0.r1 - q0.r0 + 1;
     root.querySelector('#rf-n').textContent = side + ' × ' + side;
     root.querySelector('#rf-p').textContent = Math.round((side * side) / (N0 * N0) * 100) + '%';
-    // receptive field after each layer
-    let rf = 1, jump = 1; const chain = [];
-    layers.forEach((t) => { rf += (T[t].k - 1) * jump; jump *= T[t].s; chain.push(rf); });
-    const hasPool = layers.includes('pool'), nConv = layers.filter((t) => t === 'conv').length;
-    let m = '<b>Receptive field after each layer:</b> ' + (chain.length ? chain.join(' → ') : '–') + ' pixels wide. ';
+    // plain-language chain: how many units of each earlier layer the selected unit depends on
+    let chainTxt = '';
+    for (let l = sel.l; l >= 1; l--) { const q = rng[l - 1], w = q.c1 - q.c0 + 1; chainTxt += (l === sel.l ? 'The orange unit in layer ' + sel.l : 'which in turn depend on a') + (l === sel.l ? ' is computed from a ' : ' ') + w + '×' + w + (l - 1 === 0 ? ' patch of <b>image pixels</b>' : ' patch of layer ' + (l - 1) + ' units') + (l > 1 ? ', ' : '. '); }
+    let rf = 1, jump = 1; layers.forEach((t) => { rf += (T[t].k - 1) * jump; jump *= T[t].s; });
+    const hasPool = layers.includes('pool');
+    let m = chainTxt + 'So it “sees” a <b>' + side + '×' + side + '</b> region of the image — its <b>receptive field</b>.';
     if (!layers.length) m = 'Add a layer to begin.';
-    else if (!hasPool) m += 'Each extra 3×3 conv adds just 2 pixels. Stacking <b>' + nConv + '</b> small filters reaches the view of one ' + (2 * nConv + 1) + '×' + (2 * nConv + 1) + ' filter, with ' + nConv * 9 + ' instead of ' + Math.pow(2 * nConv + 1, 2) + ' weights per channel.';
-    else m += '<b>Pooling makes the receptive field grow much faster</b> — later units see a large part of the image although every filter is tiny.';
+    else if (!hasPool) m += ' Each extra 3×3 convolution widens the view by only 2 pixels.';
+    else m += ' Pooling makes the view grow much faster.';
     root.querySelector('#rf-msg').innerHTML = m;
     root.querySelector('#rf-conv').disabled = layers.length >= MAXL || S[L - 1] < 4;
     root.querySelector('#rf-pool').disabled = layers.length >= MAXL || S[L - 1] < 2;
@@ -111,7 +113,7 @@
   root.querySelector('#rf-conv').addEventListener('click', () => { layers.push('conv'); sel = null; draw(); });
   root.querySelector('#rf-pool').addEventListener('click', () => { layers.push('pool'); sel = null; draw(); });
   root.querySelector('#rf-undo').addEventListener('click', () => { layers.pop(); sel = null; draw(); });
-  root.querySelector('#rf-reset').addEventListener('click', () => { layers = ['conv', 'conv', 'conv']; sel = null; draw(); });
+  root.querySelector('#rf-reset').addEventListener('click', () => { layers = ['conv', 'conv']; sel = null; draw(); });
   root.querySelector('#rf-digit').addEventListener('click', () => { digit = Math.floor(Math.random() * U.digits().n); draw(); });
 
   Deck.on('rf', draw);

@@ -1,7 +1,9 @@
 /* Widgets that introduce CNNs and the break
    1. images : what a network receives when it handles an image (grid of numbers per colour channel)   (slide "images")
    2. layers : the layer types of a CNN, with a clickable example network                                (slide "layers")
-   3. break  : countdown timer                                                                           (slide "break")  */
+   3. break  : countdown timer                                                                           (slide "break")
+   4. pool   : max / mean pooling and stability to small shifts                                          (slide "pooling")
+   5. head   : same encoder, classifier head vs decoder head                                             (slide "head")  */
 (function () {
   'use strict';
 
@@ -154,5 +156,81 @@
     $('#bk-p').addEventListener('click', () => { total += 60; left += 60; draw(); });
     $('#bk-m').addEventListener('click', () => { total = Math.max(60, total - 60); left = Math.max(0, left - 60); draw(); });
     draw();
+  })();
+
+  /* =================================================================
+     4. POOLING: max / mean, and stability to small shifts
+     ================================================================= */
+  (function pooling() {
+    const root = document.getElementById('w-pool'); if (!root) return;
+    const IN = 14, OUT = 12, P = 6, CS = 15;
+    const SEVEN = ['..............', '..............', '..##########..', '..##########..', '.........##...', '........##....', '.......##.....', '......##......', '.....##.......', '.....##.......', '....##........', '....##........', '..............', '..............'];
+    const base = new Float32Array(IN * IN); SEVEN.forEach((row, r) => [...row].forEach((ch, c) => { base[r * IN + c] = ch === '#' ? 1 : 0; }));
+    const K = [-1, 0, 1, -2, 0, 2, -1, 0, 1];
+    let type = 'max', dx = 1;
+    root.innerHTML = `
+      <div class="row" style="margin-bottom:.6rem;gap:.8rem">
+        <label class="ctl" style="margin:0">Pooling<div class="seg" id="pl-type"><button data-t="max" class="on">Max</button><button data-t="mean">Mean</button></div></label>
+        <label class="ctl" style="margin:0">Move the digit by<div class="seg" id="pl-dx"><button data-d="0">0 px</button><button data-d="1" class="on">1 px →</button><button data-d="2">2 px →</button></div></label>
+        <span class="small">Window 2×2, stride 2 · filter: vertical edges + ReLU</span>
+      </div>
+      <div class="row top" style="gap:1.6rem;align-items:flex-start">
+        <div><div class="tiny" style="font-weight:800;margin-bottom:.2rem">ORIGINAL IMAGE</div><canvas id="pl-i0" class="cv"></canvas></div>
+        <div><div class="tiny" style="font-weight:800;margin-bottom:.2rem">FEATURE MAP</div><canvas id="pl-f0" class="cv"></canvas></div>
+        <div><div class="tiny" style="font-weight:800;margin-bottom:.2rem">AFTER POOLING</div><canvas id="pl-p0" class="cv"></canvas></div>
+        <div class="stat hot" style="min-width:10rem;align-self:center"><div class="l">feature map still matches the original by</div><div class="n" id="pl-df">–</div><div class="l mt">pooled map still matches the original by</div><div class="n" id="pl-dp" style="color:var(--enc)">–</div></div>
+      </div>
+      <div class="row top mt" style="gap:1.6rem;align-items:flex-start">
+        <div><div class="tiny" style="font-weight:800;margin-bottom:.2rem">SHIFTED IMAGE</div><canvas id="pl-i1" class="cv"></canvas></div>
+        <div><div class="tiny" style="font-weight:800;margin-bottom:.2rem">FEATURE MAP</div><canvas id="pl-f1" class="cv"></canvas></div>
+        <div><div class="tiny" style="font-weight:800;margin-bottom:.2rem">AFTER POOLING</div><canvas id="pl-p1" class="cv"></canvas></div>
+        <div class="tiny" style="align-self:center;max-width:15rem">The map is 12×12 before pooling and 6×6 after: <b>4× fewer numbers</b> to process.</div>
+      </div>`;
+    const $ = (q) => root.querySelector(q);
+    const shift = (img, d) => { const o = new Float32Array(IN * IN); for (let r = 0; r < IN; r++) for (let c = 0; c < IN; c++) { const sc = c - d; o[r * IN + c] = sc >= 0 && sc < IN ? img[r * IN + sc] : 0; } return o; };
+    function fmap(img) { const o = new Float32Array(OUT * OUT); for (let r = 0; r < OUT; r++) for (let c = 0; c < OUT; c++) { let s = 0; for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) s += img[(r + i) * IN + c + j] * K[i * 3 + j]; o[r * OUT + c] = Math.max(0, s); } return o; }
+    function pool(m) { const o = new Float32Array(P * P); for (let r = 0; r < P; r++) for (let c = 0; c < P; c++) { const v = [m[2 * r * OUT + 2 * c], m[2 * r * OUT + 2 * c + 1], m[(2 * r + 1) * OUT + 2 * c], m[(2 * r + 1) * OUT + 2 * c + 1]]; o[r * P + c] = type === 'max' ? Math.max(...v) : (v[0] + v[1] + v[2] + v[3]) / 4; } return o; }
+    const diff = (a, b) => { let ab = 0, aa = 0, bb = 0; for (let i = 0; i < a.length; i++) { ab += a[i] * b[i]; aa += a[i] * a[i]; bb += b[i] * b[i]; } return aa && bb ? ab / Math.sqrt(aa * bb) : 0; };   // cosine similarity: 1 = identical maps
+    function paint(cv, data, n, cs, scale, grey) { const ctx = U.fit(cv, n * cs, n * cs); for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) { ctx.fillStyle = grey ? U.ink(data[r * n + c]) : U.div(data[r * n + c] / scale); ctx.fillRect(c * cs, r * cs, cs + .4, cs + .4); } ctx.strokeStyle = 'rgba(23,32,44,.08)'; for (let i = 1; i < n; i++) { ctx.beginPath(); ctx.moveTo(i * cs + .5, 0); ctx.lineTo(i * cs + .5, n * cs); ctx.moveTo(0, i * cs + .5); ctx.lineTo(n * cs, i * cs + .5); ctx.stroke(); } }
+    function draw() {
+      const i0 = base, i1 = shift(base, dx), f0 = fmap(i0), f1 = fmap(i1), p0 = pool(f0), p1 = pool(f1), sc = Math.max(1e-6, ...f0, ...f1);
+      paint($('#pl-i0'), i0, IN, CS, 1, true); paint($('#pl-i1'), i1, IN, CS, 1, true);
+      paint($('#pl-f0'), f0, OUT, CS, sc); paint($('#pl-f1'), f1, OUT, CS, sc);
+      paint($('#pl-p0'), p0, P, CS * 2, sc); paint($('#pl-p1'), p1, P, CS * 2, sc);
+      $('#pl-df').textContent = Math.round(diff(f0, f1) * 100) + '%'; $('#pl-dp').textContent = Math.round(diff(p0, p1) * 100) + '%';
+    }
+    root.querySelectorAll('#pl-type button').forEach((b) => b.addEventListener('click', () => { root.querySelectorAll('#pl-type button').forEach((x) => x.classList.remove('on')); b.classList.add('on'); type = b.dataset.t; draw(); }));
+    root.querySelectorAll('#pl-dx button').forEach((b) => b.addEventListener('click', () => { root.querySelectorAll('#pl-dx button').forEach((x) => x.classList.remove('on')); b.classList.add('on'); dx = +b.dataset.d; draw(); }));
+    window.__POOL = { test(t, d) { type = t; dx = d; const f0 = fmap(base), f1 = fmap(shift(base, d)); return { fm: diff(f0, f1), pooled: diff(pool(f0), pool(f1)) }; } };
+    Deck.on('pooling', draw);
+  })();
+
+  /* =================================================================
+     5. SAME ENCODER, DIFFERENT HEAD: classifier vs autoencoder
+     ================================================================= */
+  (function head() {
+    const root = document.getElementById('w-head'); if (!root) return;
+    root.innerHTML = `
+      <div class="row" style="margin-bottom:.5rem"><div class="seg" id="hd-m"><button data-m="cls" class="on">Classifier (supervised)</button><button data-m="ae">Autoencoder (unsupervised)</button></div></div>
+      <div class="card flat" style="padding:.6rem"><svg viewBox="0 0 760 230" style="width:100%;height:auto;display:block" role="img" aria-label="An encoder turns the image into a latent vector; a classifier head or a decoder head follows">
+        <defs><marker id="hd-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#667180"/></marker></defs>
+        <rect x="10" y="60" width="86" height="100" rx="10" fill="#e9e6dc" stroke="#b9b49f"/><text x="53" y="106" text-anchor="middle" font-weight="800" font-size="16">image x</text><text x="53" y="126" text-anchor="middle" font-size="11" fill="#555">a digit “7”</text>
+        <polygon points="130,50 300,85 300,135 130,170" fill="#dff3ef" stroke="#0d8f7f" stroke-width="2.5"/><text x="215" y="106" text-anchor="middle" font-weight="800" fill="#0a6b5e" font-size="15">Encoder</text><text x="215" y="124" text-anchor="middle" font-size="11" fill="#0a6b5e">conv + pool layers</text>
+        <g><rect x="330" y="85" width="26" height="50" rx="5" fill="#fff" stroke="#17202c" stroke-width="2.5"/><rect x="360" y="85" width="26" height="50" rx="5" fill="#fff" stroke="#17202c" stroke-width="2.5"/><rect x="390" y="85" width="26" height="50" rx="5" fill="#fff" stroke="#17202c" stroke-width="2.5"/></g>
+        <text x="373" y="76" text-anchor="middle" font-weight="800" font-size="13">latent vector z</text><text x="373" y="152" text-anchor="middle" font-size="10" fill="#555">k numbers</text>
+        <g id="hd-cls"><polygon points="450,80 450,140 570,120 570,100" fill="#e6edfd" stroke="#2859e0" stroke-width="2.5"/><text x="505" y="115" text-anchor="middle" font-weight="800" fill="#1c3f9e" font-size="13">Dense</text><text x="505" y="130" text-anchor="middle" font-size="10" fill="#1c3f9e">+ softmax</text>
+          <rect x="610" y="75" width="130" height="70" rx="10" fill="#fff" stroke="#2859e0" stroke-width="2"/><text x="675" y="104" text-anchor="middle" font-weight="800" font-size="14">class: “7”</text><text x="675" y="124" text-anchor="middle" font-size="10" fill="#555">10 probabilities</text>
+          <text x="560" y="200" text-anchor="middle" font-size="12" font-weight="800" fill="#1c3f9e">loss: compare the prediction with the LABEL</text></g>
+        <g id="hd-ae" style="display:none"><polygon points="450,100 450,120 600,150 600,70" fill="#ece5fa" stroke="#7c4fd6" stroke-width="2.5"/><text x="523" y="115" text-anchor="middle" font-weight="800" fill="#5b36a8" font-size="13">Decoder</text><text x="523" y="130" text-anchor="middle" font-size="10" fill="#5b36a8">up-sampling layers</text>
+          <rect x="630" y="60" width="110" height="100" rx="10" fill="#e9e6dc" stroke="#b9b49f"/><text x="685" y="106" text-anchor="middle" font-weight="800" font-size="15">image x̂</text><text x="685" y="126" text-anchor="middle" font-size="10" fill="#555">a rebuilt “7”</text>
+          <text x="560" y="200" text-anchor="middle" font-size="12" font-weight="800" fill="#b3510f">loss: compare x̂ with the INPUT x — no labels needed</text></g>
+        <g stroke="#667180" stroke-width="2" marker-end="url(#hd-ah)"><line x1="96" y1="110" x2="128" y2="110"/><line x1="300" y1="110" x2="328" y2="110"/><line x1="418" y1="110" x2="448" y2="110"/><line id="hd-l4" x1="570" y1="110" x2="608" y2="110"/></g>
+      </svg></div>`;
+    const $ = (q) => root.querySelector(q);
+    root.querySelectorAll('#hd-m button').forEach((b) => b.addEventListener('click', () => {
+      root.querySelectorAll('#hd-m button').forEach((x) => x.classList.remove('on')); b.classList.add('on');
+      const ae = b.dataset.m === 'ae'; $('#hd-cls').style.display = ae ? 'none' : ''; $('#hd-ae').style.display = ae ? '' : 'none';
+      $('#hd-l4').setAttribute('x1', ae ? 600 : 570); $('#hd-l4').setAttribute('x2', ae ? 628 : 608);
+    }));
   })();
 })();

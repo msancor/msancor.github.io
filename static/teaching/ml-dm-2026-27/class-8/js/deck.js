@@ -3,18 +3,17 @@
 (function () {
   'use strict';
 
-  // Planned minutes per section. First half (before the break) = 48 min of talking;
-  // total 82 min including a 10-minute break, which leaves ~8 min of buffer in a 90-min slot.
+  // Planned minutes per section. 38 min of talking before the break, 10-minute break,
+  // 83 min in total, which leaves ~7 min of buffer in a 90-min slot.
   const SECTIONS = [
-    { id: 'start',  label: 'Storyline',      min: 2 },
-    { id: 'mlp',    label: 'MLP & depth',    min: 8 },
-    { id: 'why',    label: 'Images → CNNs',  min: 9 },
-    { id: 'cnn',    label: 'How CNNs work',  min: 17 },
-    { id: 'ae',     label: 'Autoencoders',   min: 12 },
-    { id: 'break',  label: 'Break',          min: 10 },
-    { id: 'gan',    label: 'GANs',           min: 10 },
-    { id: 'beyond', label: 'RNNs & transformers', min: 12 },
-    { id: 'wrap',   label: 'Synthesis',      min: 2 },
+    { id: 'start', label: 'Plan',                    min: 2 },
+    { id: 'mlp',   label: 'MLP recap',               min: 6 },
+    { id: 'why',   label: 'Why CNNs',                min: 6 },
+    { id: 'cnn',   label: 'How CNNs work',           min: 24 },
+    { id: 'break', label: 'Break',                   min: 10 },
+    { id: 'rep',   label: 'Representation learning', min: 19 },
+    { id: 'gan',   label: 'GANs',                    min: 14 },
+    { id: 'wrap',  label: 'Wrap-up',                 min: 2 },
   ];
 
   const $ = (s, r) => (r || document).querySelector(s);
@@ -70,7 +69,7 @@
     $('#next').style.visibility = i === slides.length - 1 ? 'hidden' : 'visible';
     const id = s.id || ('s' + (i + 1));
     try { history.replaceState(null, '', '#' + id); } catch (e) { /* file:// etc. */ }
-    document.title = (s.dataset.title || 'Class') + ' · Beyond the MLP';
+    document.title = (s.dataset.title || 'Class') + ' · Deep Learning: Beyond MLPs';
     (handlers[s.id] || []).forEach((fn) => fn(s));
     updateTimer();
   }

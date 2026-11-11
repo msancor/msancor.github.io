@@ -161,6 +161,6 @@
     }));
     window.__REPR = { setSeeds(a) { SEEDS.length = 0; a.forEach((x) => SEEDS.push(x)); }, test(h, seed, n) { const oh = H; H = h; seedIdx = 0; SEEDS.length = 0; SEEDS.push(seed); make(); for (let i = 0; i < n; i++) step(); let ok = 0; P.forEach((q) => { if ((fwd(q.x, q.y).o > .5) === !!q.c) ok++; }); H = oh; make(); return ok / P.length; } };
     make();
-    Deck.on('repr', (s, resized) => { if (!resized) training = false; draw(); });
+    Deck.on('xor', (s, resized) => { if (!resized) training = false; draw(); });
   })();
 })();

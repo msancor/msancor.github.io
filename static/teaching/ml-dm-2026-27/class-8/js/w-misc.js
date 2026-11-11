@@ -46,7 +46,7 @@
         ['Last layers', 'Meaning', 'Topic, stance, tone, intent — the features a classifier can use (e.g. sentiment in social-media data).'],
       ],
     };
-    root.innerHTML = `<div class="row" style="margin-bottom:.7rem"><div class="seg" id="ld-mode"><button data-m="img" class="on">Images</button><button data-m="txt">Text</button></div><span class="small">Click a level.</span></div>
+    root.innerHTML = `<div class="row" style="margin-bottom:.7rem"><span class="small">Click a level.</span></div>
       <div class="ladder" id="ld-row"></div>
       <div class="callout mt" id="ld-detail" style="font-size:1.05rem"></div>`;
     let mode = 'img', sel = 0;
@@ -59,7 +59,6 @@
       });
       root.querySelector('#ld-detail').innerHTML = '<b>' + data[mode][sel][1] + '.</b> ' + data[mode][sel][2];
     }
-    root.querySelectorAll('#ld-mode button').forEach((b) => b.addEventListener('click', () => { root.querySelectorAll('#ld-mode button').forEach((x) => x.classList.remove('on')); b.classList.add('on'); mode = b.dataset.m; render(); }));
     render();
   })();
 

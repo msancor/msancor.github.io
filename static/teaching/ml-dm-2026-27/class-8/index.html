@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Class 8: Deep Learning · Beyond the MLP</title>
-<meta name="description" content="Class 8 of Introduction to Machine Learning and Data Mining 2026/27: from convolutional networks to GANs, with an intuition for RNNs, transformers and ChatGPT.">
+<title>Deep Learning: Beyond MLPs</title>
+<meta name="description" content="Class 8 of Introduction to Machine Learning and Data Mining 2026/27: convolutional networks, representation learning and GANs.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232859e0'/%3E%3Cg fill='%23fff'%3E%3Crect x='6' y='6' width='6' height='6'/%3E%3Crect x='13' y='6' width='6' height='6' opacity='.55'/%3E%3Crect x='6' y='13' width='6' height='6' opacity='.55'/%3E%3Crect x='13' y='13' width='6' height='6'/%3E%3Crect x='20' y='20' width='6' height='6'/%3E%3C/g%3E%3C/svg%3E">
-<link rel="stylesheet" href="css/style.css?v=6">
+<link rel="stylesheet" href="css/style.css?v=8">
 </head>
 <body>
 
 <!-- ============ chrome ============ -->
 <div id="topbar">
-  <div id="brand">Beyond the MLP</div>
+  <div id="brand">Deep Learning: Beyond MLPs</div>
   <div id="sections"></div>
   <div id="counter"></div>
   <button id="allbtn" title="Show every step of every slide at once — handy when following on your own device (A)">Show all steps</button>
@@ -36,7 +36,7 @@
     <tr><td><kbd>F</kbd></td><td>full screen</td></tr>
     <tr><td><kbd>Home</kbd> <kbd>End</kbd></td><td>first / last slide</td></tr>
   </table>
-  <p class="small mt">Each slide has its own address (e.g. <code>#convlab</code>). Arrow keys stop working while the cursor is inside an embedded tool — click outside it or use the ‹ › buttons.</p>
+  <p class="small mt">Each slide has its own address (e.g. <code>#filter</code>). Arrow keys stop working while the cursor is inside an embedded tool — click outside it or use the ‹ › buttons.</p>
 </div></div>
 
 <div id="deck">
@@ -46,244 +46,284 @@
      ===================================================================== -->
 <section class="slide title-slide" id="title" data-sec="start" data-title="Title">
   <div class="wrap center">
-    <div class="kicker">Introduction to Machine Learning and Data Mining 2026/27 · Class 8: Deep Learning</div>
-    <h1>Beyond the MLP: from <em>convolutions</em> to <em>generating images</em></h1>
-    <p class="sub">Convolutional networks, autoencoders and GANs — and an intuition for recurrent networks, transformers and ChatGPT.</p>
-    <p class="small mt2">Use <kbd>→</kbd> / <kbd>←</kbd> or the arrow buttons · <kbd>?</kbd> for shortcuts</p>
+    <div class="kicker">Introduction to Machine Learning and Data Mining 2026/27 · Class 8</div>
+    <h1>Deep Learning: <em>Beyond MLPs</em></h1>
+    <p class="sub">Convolutional networks, representation learning and GANs</p>
+    <p class="small mt2">12 November 2026</p>
   </div>
 </section>
 
-<section class="slide" id="roadmap" data-sec="start" data-title="Storyline">
+<section class="slide" id="plan" data-sec="start" data-title="Plan of the class">
   <div class="wrap">
-    <div class="kicker">Storyline</div>
-    <h2>Every architecture is a bet about the structure of the data</h2>
-    <div class="story">
-      <div class="stop c1"><div class="n">1</div><h3>MLP</h3><p>A flat vector of features. Assumes <b>no structure</b>. Learns its own features.</p></div>
-      <div class="stop c2"><div class="n">2</div><h3>CNN</h3><p><b>Space</b>: patterns are local and repeat. Locality + weight sharing.</p></div>
-      <div class="stop c3"><div class="n">3</div><h3>Autoencoder</h3><p>Learns a compact code by <b>rebuilding</b> its input — no labels.</p></div>
-      <div class="stop c4"><div class="n">4</div><h3>GAN</h3><p><b>Generates</b> new data through an adversarial game.</p></div>
-      <div class="stop c5"><div class="n">5</div><h3>RNN · LSTM</h3><p><b>Time</b>: reads in order and carries a memory. <i>Intuition only.</i></p></div>
-      <div class="stop c6"><div class="n">6</div><h3>Transformer</h3><p><b>Attention</b>: every word can look at every other. <i>Intuition only.</i></p></div>
-      <div class="stop c7"><div class="n">7</div><h3>ChatGPT</h3><p>Next-word prediction at scale, tuned with human feedback. <i>Intuition only.</i></p></div>
+    <div class="kicker">Plan</div>
+    <h2>Plan of the class</h2>
+    <div class="grid g4 mt">
+      <div class="card" style="border-top:4px solid #8a93a3"><div class="tiny" style="font-weight:800">PART I</div><h3>MLP recap</h3><p class="small" style="color:var(--ink-2)">What an MLP does well, and what it assumes about the data.</p></div>
+      <div class="card enc"><div class="tiny" style="font-weight:800">PART II</div><h3>Convolutional networks</h3><p class="small" style="color:var(--ink-2)">Why images need a different architecture, and how a CNN works.</p></div>
+      <div class="card dec"><div class="tiny" style="font-weight:800">PART III</div><h3>Representation learning</h3><p class="small" style="color:var(--ink-2)">From engineering features to learning them: encoders and autoencoders.</p></div>
+      <div class="card gen"><div class="tiny" style="font-weight:800">PART IV</div><h3>Generative models</h3><p class="small" style="color:var(--ink-2)">GANs: from understanding images to creating them.</p></div>
     </div>
-    <div class="fact step mt2"><b class="h">The thread</b><p>Throughout, networks learn <b>representations</b> of the data with the same training loop (loss → backpropagation → update). What changes is <b>which connections exist</b> — the assumption about the data's structure.</p></div>
-    <div class="src"><b>Sources</b>Goodfellow, Bengio &amp; Courville (2016); Bengio, Courville &amp; Vincent (2013) — full references at the end.</div>
+    <div class="fact step mt2"><b class="h">Running example</b><p>A handwritten digit — and, at the end, faces. A <b>break</b> after Part II. Each part ends with a short exercise.</p></div>
+    <div class="src"><b>Sources</b>Structure inspired by MIT 6.7960 <i>Deep Learning</i> (Fall 2024), Lecture 4, simplified.</div>
   </div>
 </section>
 
 <!-- =====================================================================
-     ACT 1 · MLP & DEPTH
+     PART I · MLP RECAP
      ===================================================================== -->
-<section class="slide" id="mlp" data-sec="mlp" data-title="Recap: how an MLP works">
+<section class="slide" id="mlp" data-sec="mlp" data-title="MLP: linear combination + non-linearity">
   <div class="wrap">
-    <div class="kicker">Act 1 · The MLP and why depth · recap</div>
-    <h2>An MLP is a stack of “linear map + non-linearity” layers, trained by gradient descent</h2>
+    <div class="kicker">Part I · MLP recap</div>
+    <h2>An MLP: a linear combination and a non-linearity, repeated layer after layer</h2>
     <div id="w-mlp" class="mt"></div>
-    <div class="grid g3">
-      <div class="fact step"><b class="h">Dense layer</b><p>Every unit sees every input. Parameters = inputs × units + units.</p></div>
+    <div class="grid g2">
+      <div class="fact step"><b class="h">One unit</b><p>A weighted sum of <b>all</b> its inputs plus a bias (the linear combination), passed through a non-linearity such as ReLU or sigmoid.</p></div>
       <div class="fact step"><b class="h">Learning</b><p>Forward pass → loss → backpropagation → update (Rumelhart et al., 1986).</p></div>
-      <div class="fact step"><b class="h">Expressive in principle</b><p>One hidden layer can approximate any continuous function (Cybenko, 1989; Hornik et al., 1989) — but that says nothing about how many units are needed, or how learnable it is.</p></div>
     </div>
-    <div class="src"><b>Sources</b>Rumelhart, Hinton &amp; Williams (1986); Cybenko (1989); Hornik, Stinchcombe &amp; White (1989); Goodfellow et al. (2016) ch. 6; course Class 5 (slides 6–20).</div>
+    <div class="src"><b>Sources</b>Rumelhart, Hinton &amp; Williams (1986); Goodfellow et al. (2016) ch. 6; course Class 5 (slides 6–20).</div>
   </div>
 </section>
 
-<section class="slide" id="repr" data-sec="mlp" data-title="Why depth: representations">
+<section class="slide" id="xor" data-sec="mlp" data-title="Why the non-linearity matters">
   <div class="wrap">
-    <div class="kicker">Act 1 · Why deep learning</div>
-    <h2>A hidden layer re-represents the data so that a simple classifier suffices</h2>
+    <div class="kicker">Part I · MLP recap</div>
+    <h2>The hidden layer and its non-linearity solve what a straight line cannot</h2>
     <div id="w-repr" class="mt"></div>
     <div class="grid g3">
-      <div class="fact warn step"><b class="h">Raw inputs: no line works</b><p>XOR: a linear model scores ≈ 50 % — the classic limitation of the single-layer perceptron (Minsky &amp; Papert, 1969).</p></div>
-      <div class="fact enc step"><b class="h">Learned features: a line works</b><p>The hidden layer learns new coordinates (h₁, h₂) in which the classes <b>are</b> linearly separable — features and classifier are learned together.</p></div>
-      <div class="fact step"><b class="h">“Representation learning”</b><p>The main advantage of neural networks over manual feature engineering (Bengio et al., 2013). Deeper nets repeat the step.</p></div>
+      <div class="fact warn step"><b class="h">Raw inputs: no line works</b><p>XOR: a linear model scores ≈ 50 % (Minsky &amp; Papert, 1969).</p></div>
+      <div class="fact enc step"><b class="h">Hidden layer: a line works</b><p>The hidden units learn new coordinates (h₁, h₂) in which one straight line separates the classes.</p></div>
+      <div class="fact step"><b class="h">Without the non-linearity</b><p>Stacked linear layers would collapse into a single linear map — no better than the model on the left.</p></div>
     </div>
-    <div class="src"><b>Sources</b>Goodfellow et al. (2016) §6.1 (learning XOR); Minsky &amp; Papert (1969); Bengio, Courville &amp; Vincent (2013); Olah (2014), <i>Neural networks, manifolds and topology</i>; course Class 5 (slides 6, 39–41). Live demo: 240 points, trained in your browser.</div>
+    <div class="src"><b>Sources</b>Goodfellow et al. (2016) §6.1 (learning XOR); Minsky &amp; Papert (1969). Live demo: 240 points, trained in your browser.</div>
   </div>
 </section>
 
-<section class="slide" id="hier" data-sec="mlp" data-title="Hierarchy of representations">
+<section class="slide" id="mlpcons" data-sec="mlp" data-title="MLPs: strengths and weaknesses">
   <div class="wrap">
-    <div class="kicker">Act 1 · Why deep learning</div>
-    <h2>Stacking layers builds a hierarchy: simple features are composed into abstract ones</h2>
-    <div id="w-ladder" class="mt"></div>
-    <div class="grid g3">
-      <div class="fact enc step"><b class="h">Empirical evidence</b><p>In trained image CNNs, early layers respond to edges and colour, middle layers to textures and parts, late layers to object-level patterns (Zeiler &amp; Fergus, 2014; Olah et al., 2017).</p></div>
-      <div class="fact step"><b class="h">Biological inspiration</b><p>Hierarchical visual processing (Hubel &amp; Wiesel, 1962) inspired the Neocognitron (Fukushima, 1980) and, through it, CNNs.</p></div>
-      <div class="fact gen step"><b class="h">Same logic in language</b><p>Characters → words → phrases → meaning: see the “Text” tab.</p></div>
+    <div class="kicker">Part I · MLP recap</div>
+    <h2>MLPs are powerful, but they assume nothing about the data</h2>
+    <div class="grid g2 mt" style="align-items:start">
+      <div>
+        <div class="tiny" style="font-weight:800;letter-spacing:.08em;color:var(--good);margin-bottom:.4rem">ADVANTAGES</div>
+        <div class="fact enc step"><b class="h">Universal</b><p>With enough hidden units, an MLP with one hidden layer and a non-polynomial activation can approximate any continuous function on a bounded region as closely as we like (Cybenko, 1989; Hornik, 1991; Leshno et al., 1993). This says good weights <i>exist</i> — not that training will find them, nor how many units are needed.</p></div>
+        <div class="fact enc step"><b class="h">Parallelizable</b><p>Each layer is one matrix multiplication, which GPUs compute in parallel.</p></div>
+      </div>
+      <div>
+        <div class="tiny" style="font-weight:800;letter-spacing:.08em;color:var(--bad);margin-bottom:.4rem">DISADVANTAGES</div>
+        <div class="fact warn step"><b class="h">Weak inductive bias</b><p>Every input is connected to every unit: the architecture says nothing about the structure of the data (neighbours, order, symmetries).</p></div>
+        <div class="fact warn step"><b class="h">Data hungry</b><p>Because nothing is assumed, everything must be learned from examples.</p></div>
+        <div class="fact warn step"><b class="h">Computationally expensive</b><p>Parameters = inputs × units + units: they explode for large inputs, as the next part shows.</p></div>
+      </div>
     </div>
-    <div class="src"><b>Sources</b>Zeiler &amp; Fergus (2014); Olah, Mordvintsev &amp; Schubert (2017); Goodfellow et al. (2016) Fig. 1.2; Hubel &amp; Wiesel (1962); Fukushima (1980). The drawings are schematic, after Goodfellow et al. (2016) Fig. 1.2 — not outputs of a trained model.</div>
+    <div class="src"><b>Sources</b>Cybenko (1989); Hornik (1991); Leshno, Lin, Pinkus &amp; Schocken (1993); Goodfellow et al. (2016) §6.4; MIT 6.7960 Lecture 4 (why other architectures?).</div>
   </div>
 </section>
 
 <!-- =====================================================================
-     ACT 2 · CNNs  — handling images, the case for CNNs
+     PART II · CNNs
      ===================================================================== -->
-<section class="slide" id="images" data-sec="why" data-title="What a network receives: an image">
+<section class="slide" id="images" data-sec="why" data-title="An image is a grid of numbers">
   <div class="wrap">
-    <div class="kicker">Act 2 · CNNs · handling images</div>
+    <div class="kicker">Part II · Convolutional networks · images</div>
     <h2>To a network, an image is a grid of numbers — one grid per colour channel</h2>
     <div id="w-img" class="mt"></div>
     <div class="grid g3">
       <div class="fact enc step"><b class="h">Height × width × channels</b><p>A greyscale image has 1 channel (brightness); a colour image has 3 (red, green, blue), each a number from 0 to 255.</p></div>
-      <div class="fact enc step"><b class="h">Neighbours are related</b><p>Look at the highlighted 3×3 patch: in smooth regions the numbers barely change; at an edge they jump. Patterns live in <b>local neighbourhoods</b>.</p></div>
-      <div class="fact warn step"><b class="h">And there are a lot of them</b><p>Even a small photo has hundreds of thousands of numbers — the problem the next slides address.</p></div>
+      <div class="fact enc step"><b class="h">Neighbours are related</b><p>In the highlighted 3×3 patch, numbers barely change in smooth regions and jump at edges: patterns live in <b>local neighbourhoods</b>.</p></div>
+      <div class="fact warn step"><b class="h">There are a lot of numbers</b><p>Even a small photo has hundreds of thousands.</p></div>
     </div>
     <div class="src"><b>Sources</b>Goodfellow et al. (2016) ch. 9 (introduction); Zhang et al., <i>Dive into Deep Learning</i> §7.1. The colour picture is a toy drawn for this slide; the digit is from the UCI Optical Recognition of Handwritten Digits data (Alpaydin &amp; Kaynak).</div>
   </div>
 </section>
 
-<section class="slide" id="params" data-sec="why" data-title="The case for CNNs: size">
+<section class="slide" id="params" data-sec="why" data-title="An MLP on an image: parameters to fit">
   <div class="wrap">
-    <div class="kicker">Act 2 · The case for CNNs (1/3) · size</div>
-    <h2>Images are too big for dense layers: the parameter count explodes</h2>
+    <div class="kicker">Part II · Convolutional networks · why an MLP struggles</div>
+    <h2>Feeding an image to an MLP means millions of parameters to fit</h2>
     <div id="w-params" class="mt"></div>
     <div class="grid g3">
-      <div class="fact warn step"><b class="h">≈ 150 million weights</b><p>One dense layer of 1,000 units on a 224 × 224 colour photo (150,528 inputs) — about 600 MB, before adding a second layer.</p></div>
-      <div class="fact warn step"><b class="h">Overfitting risk</b><p>Far more parameters than examples: the network can memorise instead of generalise.</p></div>
-      <div class="fact enc step"><b class="h">A convolutional layer does not grow with the image</b><p>64 filters of 3 × 3 × 3 = 1,792 parameters, whatever the image size.</p></div>
+      <div class="fact step"><b class="h">The MLP needs a vector</b><p>The grid is <b>flattened</b>: its rows are laid end to end into one long list. A 28×28 digit becomes 784 numbers, and pixels that were neighbours above and below end up 28 positions apart.</p></div>
+      <div class="fact warn step"><b class="h">Every weight must be fitted</b><p>One dense layer of 1,000 units on a 224×224 colour photo has ≈ 150 million weights. Fitting them needs an enormous amount of training data — otherwise the network memorises (overfits) — plus lots of memory and compute.</p></div>
+      <div class="fact enc step"><b class="h">A convolutional layer does not grow with the image</b><p>64 filters of 3×3×3 = 1,792 parameters, whatever the image size (next slides).</p></div>
     </div>
-    <div class="src"><b>Sources</b>Goodfellow et al. (2016) §9.2; Zhang et al., <i>Dive into Deep Learning</i> §7.1; course Class 5 (slides 9–11: counting dense-layer parameters) and the MNIST exercise (795,010 parameters).</div>
+    <div class="src"><b>Sources</b>Goodfellow et al. (2016) §9.2; Zhang et al., <i>Dive into Deep Learning</i> §7.1; course Class 5 (slides 9–11) and the MNIST exercise (795,010 parameters).</div>
   </div>
 </section>
 
-<section class="slide" id="shuffle" data-sec="why" data-title="The case for CNNs: structure">
+<section class="slide" id="connect" data-sec="why" data-title="Local connections and shared weights">
   <div class="wrap">
-    <div class="kicker">Act 2 · The case for CNNs (2/3) · structure</div>
-    <h2>Flattening discards what makes an image an image: its spatial structure</h2>
-    <div class="grid g-side mt" style="align-items:start">
-      <div id="w-shuffle"></div>
-      <div>
-        <div class="fact warn step"><b class="h">The MLP receives a list, not a picture</b><p>Pixel 17 and pixel 18 are just two inputs; the pixel <i>below</i> pixel 17 is number 25. Neighbourhood is not represented anywhere.</p></div>
-        <div class="fact step"><b class="h">The proof: permute the pixels</b><p>Shuffle every image with the <b>same</b> random permutation and an MLP learns equally well (the “permutation-invariant MNIST” setting). A human — or a CNN — could not.</p></div>
-        <div class="fact enc step"><b class="h">What we know and the MLP does not</b><p>① Nearby pixels form meaningful patterns. ② A pattern means the same wherever it appears. <b>→ Build both into the architecture.</b></p></div>
-      </div>
-    </div>
-    <div class="src"><b>Sources</b>Goodfellow et al. (2013), <i>Maxout networks</i> (permutation-invariant MNIST); Goodfellow et al. (2016) §9.2; LeCun et al. (1998). Digits: UCI Optical Recognition of Handwritten Digits (Alpaydin &amp; Kaynak).</div>
-  </div>
-</section>
-
-<section class="slide" id="connect" data-sec="why" data-title="Locality and weight sharing">
-  <div class="wrap">
-    <div class="kicker">Act 2 · The case for CNNs (3/3) · the two priors</div>
-    <h2>The fix: build in locality and weight sharing</h2>
+    <div class="kicker">Part II · Convolutional networks · exploiting the structure of images</div>
+    <h2>Exploit what images have: local connections and shared weights</h2>
     <div class="grid g-side mt" style="align-items:start">
       <div id="w-connect"></div>
       <div>
-        <div class="fact enc step"><b class="h">Locality (sparse connectivity)</b><p>Each unit looks at a small neighbourhood. Far fewer connections; units detect <b>local</b> patterns.</p></div>
-        <div class="fact enc step"><b class="h">Weight sharing</b><p>The same filter is applied at every position: far fewer parameters, and a pattern is found <b>wherever</b> it occurs (translation equivariance).</p></div>
-        <div class="fact step"><b class="h">Where the idea comes from</b><p>Local receptive fields (Hubel &amp; Wiesel, 1962) → Neocognitron (Fukushima, 1980) → backpropagation on zip codes (LeCun et al., 1989) → LeNet-5 (LeCun et al., 1998).</p></div>
-        <div class="fact warn step"><b class="h">These are assumptions</b><p>Right for images, audio, time series. Wrong for a spreadsheet: neighbouring columns “age, income, region” mean nothing.</p></div>
+        <div class="fact enc step"><b class="h">Local connections</b><p>Each unit looks only at a small neighbourhood: far fewer connections.</p></div>
+        <div class="fact enc step"><b class="h">Shared weights</b><p>The same few weights are reused at every position: far fewer parameters, and a pattern is found <b>wherever</b> it occurs.</p></div>
+        <div class="fact step"><b class="h">Parallel</b><p>Each output is computed independently of the others, so all positions can be computed at once on a GPU.</p></div>
+        <div class="fact warn step"><b class="h">These are assumptions</b><p>Right for images. Wrong for a spreadsheet, where neighbouring columns mean nothing.</p></div>
+        <p class="tiny">To keep the picture simple, the “image” here is a single row of 8 pixels.</p>
       </div>
     </div>
-    <div class="src"><b>Sources</b>Goodfellow et al. (2016) §9.2 (sparse interactions, parameter sharing, equivariance); Hubel &amp; Wiesel (1962); Fukushima (1980); LeCun et al. (1989, 1998).</div>
+    <div class="src"><b>Sources</b>Goodfellow et al. (2016) §9.2 (sparse interactions, parameter sharing); LeCun et al. (1989, 1998); MIT 6.7960 Lecture 4 (fully connected vs. locally connected vs. conv layers).</div>
   </div>
 </section>
 
-<!-- =====================================================================
-     ACT 2 · HOW CNNs WORK
-     ===================================================================== -->
-<section class="slide" id="layers" data-sec="cnn" data-title="Types of layers in a CNN">
+<section class="slide" id="filter" data-sec="cnn" data-title="Filters and convolution">
   <div class="wrap">
-    <div class="kicker">Act 2 · How CNNs work (1/6) · the layer types</div>
-    <h2>A CNN is built from three types of layers</h2>
-    <div id="w-layers" class="mt"></div>
+    <div class="kicker">Part II · How CNNs work (1/8) · the filter</div>
+    <h2>A filter is a small pattern detector slid across the image; the result is a feature map</h2>
+    <div id="w-conv" data-mode="basic" class="mt"></div>
     <div class="grid g3">
-      <div class="fact enc step"><b class="h">Feature extractor</b><p><b>Convolution</b> (+ ReLU) and <b>pooling</b> layers turn the image into feature maps, from local patterns to larger ones.</p></div>
-      <div class="fact step"><b class="h">Classifier</b><p><b>Flatten</b> + <b>dense</b> layers (+ softmax) turn the features into class probabilities: the MLP from Class 5.</p></div>
-      <div class="fact step"><b class="h">What is learned</b><p>Only convolutional and dense layers have parameters; pooling has none. All are trained together by backpropagation.</p></div>
+      <div class="fact enc step"><b class="h">Convolution</b><p>Slide a small kernel over the image; at each position multiply it with the patch underneath and add up. The 3×3 kernel is just 9 numbers.</p></div>
+      <div class="fact enc step"><b class="h">Feature map</b><p>The output shows <b>where</b> the pattern is: orange = a match, blue = the opposite pattern.</p></div>
+      <div class="fact step"><b class="h">Same detector everywhere</b><p>Shift the digit and the feature map shifts with it.</p></div>
     </div>
-    <div class="src"><b>Sources</b>LeCun, Bottou, Bengio &amp; Haffner (1998); Goodfellow et al. (2016) §9.1–9.3; Zhang et al., <i>Dive into Deep Learning</i> ch. 7.</div>
+    <div class="src"><b>Sources</b>Goodfellow et al. (2016) §9.1; Zhang et al., <i>Dive into Deep Learning</i> §7.2; Powell, <a href="https://setosa.io/ev/image-kernels/" target="_blank" rel="noopener">Image kernels explained visually</a>. Strictly this is cross-correlation (no kernel flip), which deep-learning libraries call “convolution”.</div>
   </div>
 </section>
 
-<section class="slide" id="convlab" data-sec="cnn" data-title="How CNNs work: the convolution">
+<section class="slide" id="layer" data-sec="cnn" data-title="Colour and many filters: a convolutional layer">
   <div class="wrap">
-    <div class="kicker">Act 2 · How CNNs work (2/6) · the convolutional layer</div>
-    <h2>A filter is a small pattern detector slid across the image; its output is a feature map</h2>
-    <div id="w-conv" class="mt"></div>
-    <div class="grid g3">
-      <div class="fact enc step"><b class="h">Operation</b><p>Slide a k×k kernel; at each position multiply the patch by the kernel and add up. <span class="mono">out(r,c) = Σᵢⱼ patch(r+i, c+j) · kernel(i,j)</span></p></div>
-      <div class="fact enc step"><b class="h">Feature map</b><p>Shows <b>where</b> the pattern occurs: orange = match, blue = opposite pattern. ReLU keeps only positive evidence.</p></div>
-      <div class="fact enc step"><b class="h">Max-pooling</b><p>The pooling layer keeps the strongest response in each block: half the size, a little tolerance to shifts.</p></div>
-    </div>
-    <div class="src"><b>Sources</b>Goodfellow et al. (2016) §9.1, §9.3; Zhang et al., <i>Dive into Deep Learning</i> §7.2; Powell, <a href="https://setosa.io/ev/image-kernels/" target="_blank" rel="noopener">Image kernels explained visually</a> (setosa.io). Strictly this is cross-correlation (no kernel flip), which is what deep-learning libraries call “convolution”.</div>
-  </div>
-</section>
-
-<section class="slide" id="layer" data-sec="cnn" data-title="A layer: many learned filters">
-  <div class="wrap">
-    <div class="kicker">Act 2 · How CNNs work (3/6) · a convolutional layer in detail</div>
-    <h2>A layer applies many filters at once — and the filters are learned, not designed</h2>
+    <div class="kicker">Part II · How CNNs work (2/8) · a convolutional layer</div>
+    <h2>With colour and many filters: a convolutional layer</h2>
     <div class="grid g-side mt" style="align-items:center">
       <div class="card flat" style="padding:.8rem">
         <svg viewBox="0 0 700 290" style="width:100%;height:auto" role="img" aria-label="An input volume of height, width and channels is convolved with F filters to produce an output volume with F feature maps">
           <defs><marker id="ah5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#667180"/></marker></defs>
           <g><rect x="38" y="62" width="130" height="130" fill="#fbd5d0" stroke="#c0392b"/><rect x="26" y="74" width="130" height="130" fill="#d4f0d8" stroke="#1f8a4c"/><rect x="14" y="86" width="130" height="130" fill="#d6e2fb" stroke="#2859e0"/>
-            <text x="80" y="240" text-anchor="middle" font-weight="800" font-size="14">Input</text><text x="80" y="258" text-anchor="middle" font-size="11" fill="#555">H × W × C<tspan font-size="8" dy="3">in</tspan></text><text x="80" y="273" text-anchor="middle" font-size="10" fill="#667180">e.g. 224×224×3</text></g>
+            <text x="80" y="240" text-anchor="middle" font-weight="800" font-size="14">Input</text><text x="80" y="258" text-anchor="middle" font-size="11" fill="#555">H × W × C<tspan font-size="8" dy="3">in</tspan></text><text x="80" y="273" text-anchor="middle" font-size="10" fill="#667180">colour: C<tspan font-size="7" dy="2">in</tspan><tspan dy="-2"> = 3 (R, G, B)</tspan></text></g>
           <g><rect x="250" y="100" width="34" height="34" fill="#fdeadd" stroke="#e8712d" stroke-width="2"/><rect x="244" y="106" width="34" height="34" fill="#fdeadd" stroke="#e8712d" stroke-width="2"/><rect x="238" y="112" width="34" height="34" fill="#fdeadd" stroke="#e8712d" stroke-width="2"/>
             <rect x="310" y="100" width="34" height="34" fill="#e1f0d8" stroke="#1f8a4c" stroke-width="2"/><rect x="304" y="106" width="34" height="34" fill="#e1f0d8" stroke="#1f8a4c" stroke-width="2"/><rect x="298" y="112" width="34" height="34" fill="#e1f0d8" stroke="#1f8a4c" stroke-width="2"/>
             <rect x="250" y="170" width="34" height="34" fill="#ece5fa" stroke="#7c4fd6" stroke-width="2"/><rect x="244" y="176" width="34" height="34" fill="#ece5fa" stroke="#7c4fd6" stroke-width="2"/><rect x="238" y="182" width="34" height="34" fill="#ece5fa" stroke="#7c4fd6" stroke-width="2"/>
-            <text x="295" y="240" text-anchor="middle" font-weight="800" font-size="14">F filters</text><text x="295" y="258" text-anchor="middle" font-size="11" fill="#555">each k × k × C<tspan font-size="8" dy="3">in</tspan></text><text x="295" y="273" text-anchor="middle" font-size="10" fill="#667180">e.g. 64 × (3×3×3)</text></g>
+            <text x="295" y="240" text-anchor="middle" font-weight="800" font-size="14">F filters</text><text x="295" y="258" text-anchor="middle" font-size="11" fill="#555">each k × k × C<tspan font-size="8" dy="3">in</tspan></text><text x="295" y="273" text-anchor="middle" font-size="10" fill="#667180">e.g. 8 × (3×3×3)</text></g>
           <g stroke="#667180" stroke-width="2" marker-end="url(#ah5)"><line x1="172" y1="150" x2="232" y2="150"/><line x1="352" y1="150" x2="432" y2="150"/></g>
           <text x="202" y="140" text-anchor="middle" font-size="10" font-weight="700" fill="#667180">slide</text><text x="392" y="140" text-anchor="middle" font-size="10" font-weight="700" fill="#667180">stack</text>
           <g>
             <rect x="590" y="40" width="96" height="96" fill="#f3f1ea" stroke="#0d8f7f"/><rect x="582" y="48" width="96" height="96" fill="#e9f5f2" stroke="#0d8f7f"/><rect x="574" y="56" width="96" height="96" fill="#dff3ef" stroke="#0d8f7f"/><rect x="566" y="64" width="96" height="96" fill="#d1ede7" stroke="#0d8f7f"/><rect x="558" y="72" width="96" height="96" fill="#c3e7df" stroke="#0d8f7f"/><rect x="550" y="80" width="96" height="96" fill="#b5e1d8" stroke="#0d8f7f"/><rect x="542" y="88" width="96" height="96" fill="#a7dbd0" stroke="#0d8f7f"/><rect x="534" y="96" width="96" height="96" fill="#99d5c8" stroke="#0d8f7f"/><rect x="526" y="104" width="96" height="96" fill="#8bcfc0" stroke="#0d8f7f"/><rect x="518" y="112" width="96" height="96" fill="#7dc9b8" stroke="#0d8f7f"/>
-            <text x="590" y="240" text-anchor="middle" font-weight="800" font-size="14">Feature maps</text><text x="590" y="258" text-anchor="middle" font-size="11" fill="#555">H′ × W′ × F</text><text x="590" y="273" text-anchor="middle" font-size="10" fill="#667180">e.g. 222×222×64</text></g>
+            <text x="590" y="240" text-anchor="middle" font-weight="800" font-size="14">F feature maps</text><text x="590" y="258" text-anchor="middle" font-size="11" fill="#555">H′ × W′ × F</text><text x="590" y="273" text-anchor="middle" font-size="10" fill="#667180">one map per filter</text></g>
         </svg>
       </div>
       <div>
-        <div class="fact enc step"><b class="h">Each filter spans all input channels</b><p>A filter on an RGB image is 3×3×3 = 27 weights + 1 bias. A layer with F filters gives F feature maps.</p></div>
-        <div class="eq step">parameters = F · (k·k·C<sub>in</sub> + 1)<br>output size = ⌊(n + 2p − k) / s⌋ + 1</div>
-        <div class="fact step"><b class="h">The numbers in the filters are learned</b><p>Random start, then the <b>same</b> training loop as the MLP. In trained image networks the first-layer filters typically look like edge and colour detectors (Krizhevsky et al., 2012, Fig. 3).</p></div>
-        <div class="fact step"><b class="h">Worked example</b><p>64 filters of 3×3 on an RGB photo: 64 × (27 + 1) = <b>1,792</b> parameters. (n = input size, k = kernel size, p = padding, s = stride.)</p></div>
+        <div class="fact enc step"><b class="h">Colour</b><p>A filter spans <b>all</b> input channels: on an RGB image it is 3×3×3 = 27 weights, plus one bias.</p></div>
+        <div class="fact enc step"><b class="h">Many filters</b><p>Each filter detects a different pattern and produces its own feature map; together they are the layer’s output.</p></div>
+        <div class="fact step"><b class="h">Parameters</b><p><span class="mono">F · (k·k·C<sub>in</sub> + 1)</span> — independent of the image size. Example: 8 filters on an RGB image: 8 × 28 = <b>224</b>.</p></div>
+        <div class="fact step"><b class="h">Learned, not designed</b><p>The numbers in the filters are learned by backpropagation (first-layer filters of trained networks look like edge and colour detectors).</p></div>
       </div>
     </div>
-    <div class="src"><b>Sources</b>Krizhevsky, Sutskever &amp; Hinton (2012) Fig. 3; Zhang et al., <i>Dive into Deep Learning</i> §7.3–7.4 (padding, stride, channels); Goodfellow et al. (2016) ch. 9. The size formula holds when stride and padding divide evenly.</div>
+    <div class="src"><b>Sources</b>Krizhevsky, Sutskever &amp; Hinton (2012) Fig. 3; Zhang et al., <i>Dive into Deep Learning</i> §7.4 (channels); MIT 6.7960 Lecture 4 (multi-channel inputs and outputs).</div>
   </div>
 </section>
 
-<section class="slide" id="rf" data-sec="cnn" data-title="Stacking and receptive fields">
+<section class="slide" id="rf" data-sec="cnn" data-title="Stacking layers">
   <div class="wrap">
-    <div class="kicker">Act 2 · How CNNs work (4/6) · depth</div>
-    <h2>Stacking layers — and pooling — grows what each unit can see: that is the hierarchy</h2>
+    <div class="kicker">Part II · How CNNs work (3/8) · stacking layers</div>
+    <h2>Stack layers, and each unit sees a larger part of the image</h2>
     <div id="w-rf" class="mt"></div>
     <div class="grid g3">
-      <div class="fact enc step"><b class="h">Convolutions add slowly</b><p>Every filter is tiny, but each 3×3 conv adds only 2 pixels to the <b>receptive field</b> (the region a unit depends on): 3 → 5 → 7 …</p></div>
-      <div class="fact enc step"><b class="h">Pooling accelerates it</b><p>Downsampling makes later filters cover more of the original image: conv → pool → conv → pool reaches 3 → 4 → 8 → 10.</p></div>
-      <div class="fact step"><b class="h">Link to the hierarchy</b><p>Small receptive field → edges; large → parts and objects. In practice the <i>effective</i> receptive field is smaller than the theoretical one (Luo et al., 2016).</p></div>
+      <div class="fact enc step"><b class="h">Layer after layer</b><p>The output of one layer is the input of the next. A unit in layer 2 depends on a small patch of layer 1, and each of those depends on a patch of the image.</p></div>
+      <div class="fact enc step"><b class="h">Receptive field</b><p>The region of the image a unit depends on. It grows with depth: stacking more layers widens the view, even though every filter stays small.</p></div>
+      <div class="fact step"><b class="h">A non-linear filter</b><p>After each convolution we apply a non-linearity (ReLU). Without it, a stack of filters would collapse into one linear filter — the same reason as in the MLP.</p></div>
     </div>
-    <div class="src"><b>Sources</b>Goodfellow et al. (2016) §9.2; Luo, Li, Urtasun &amp; Zemel (2016); Zeiler &amp; Fergus (2014). Shown here: valid 3×3 convolutions, stride 1, and 2×2 pooling with stride 2.</div>
+    <div class="src"><b>Sources</b>Goodfellow et al. (2016) §9.2; MIT 6.7960 Lecture 4 (stacking convolutional layers; receptive fields); Luo et al. (2016) (the <i>effective</i> receptive field is smaller than the theoretical one). Valid 3×3 convolutions, stride 1; 2×2 pooling with stride 2.</div>
   </div>
 </section>
 
-<section class="slide" id="anatomy" data-sec="cnn" data-title="Anatomy of a CNN">
+<section class="slide" id="hier" data-sec="cnn" data-title="What feature maps represent">
   <div class="wrap">
-    <div class="kicker">Act 2 · How CNNs work (5/6) · putting it together (28×28 digits)</div>
-    <h2>A CNN classifier = a learned feature extractor + the MLP you already know</h2>
+    <div class="kicker">Part II · How CNNs work (4/8) · what the maps represent</div>
+    <h2>Early feature maps show edges; deeper ones show parts and whole objects</h2>
+    <div id="w-ladder" class="mt"></div>
+    <div class="grid g2">
+      <div class="fact enc step"><b class="h">Structural representations</b><p>Each feature map says where one structure occurs. Small receptive fields can only see edges and colour; larger ones can combine them into textures, parts and objects (Zeiler &amp; Fergus, 2014; Olah et al., 2017).</p></div>
+      <div class="fact step"><b class="h">Learned, not told</b><p>No one tells the network to find edges or eyes: these structures emerge because they help the task.</p></div>
+    </div>
+    <div class="src"><b>Sources</b>Zeiler &amp; Fergus (2014); Olah, Mordvintsev &amp; Schubert (2017); Goodfellow et al. (2016) Fig. 1.2. The drawings are schematic — not outputs of a trained model.</div>
+  </div>
+</section>
+
+<section class="slide" id="ex1" data-sec="cnn" data-title="Exercise: count the parameters">
+  <div class="wrap">
+    <div class="kicker">Part II · Exercise</div>
+    <h2>Exercise: count the parameters</h2>
+    <p class="lead">Input: a 28×28 greyscale digit. Work these out; then check.</p>
+    <div class="grid g2 mt">
+      <div class="card"><b>1.</b> An MLP flattens the digit and has <b>one hidden layer of 100 units</b>. How many weights and biases in that layer?<div><button class="btn small" data-reveal style="margin-top:.4rem">Show answer</button><div class="reveal-box">784 × 100 + 100 = <b>78,500</b></div></div></div>
+      <div class="card"><b>2.</b> A convolutional layer with <b>8 filters of 3×3</b> on the same digit. How many parameters?<div><button class="btn small" data-reveal style="margin-top:.4rem">Show answer</button><div class="reveal-box">8 × (3·3·1 + 1) = <b>80</b> — about 1,000× fewer.</div></div></div>
+      <div class="card"><b>3.</b> The same conv layer, but the input is a <b>colour</b> image (28×28×3). How many parameters?<div><button class="btn small" data-reveal style="margin-top:.4rem">Show answer</button><div class="reveal-box">8 × (3·3·3 + 1) = 8 × 28 = <b>224</b></div></div></div>
+      <div class="card"><b>4.</b> What is the <b>size of the output</b> of the layer in question 2 (no padding, stride 1)?<div><button class="btn small" data-reveal style="margin-top:.4rem">Show answer</button><div class="reveal-box">(28 − 3 + 1) = 26 → <b>26 × 26 × 8</b>: 8 feature maps of 26×26.</div></div></div>
+    </div>
+    <div class="src"><b>Sources</b>Formula: parameters = F·(k·k·C<sub>in</sub> + 1); output side = n − k + 1 (no padding, stride 1). Exercise in the spirit of MIT 6.7960 Lecture 4 (multi-channel example).</div>
+  </div>
+</section>
+
+<section class="slide" id="pooling" data-sec="cnn" data-title="Pooling">
+  <div class="wrap">
+    <div class="kicker">Part II · How CNNs work (5/8) · pooling</div>
+    <h2>Pooling shrinks the feature maps and makes them robust to small shifts</h2>
+    <div id="w-pool" class="mt"></div>
+    <div class="grid g3">
+      <div class="fact enc step"><b class="h">Max or mean</b><p>Each 2×2 window is replaced by its maximum (max pooling) or its average (mean pooling): half the height and width, no parameters.</p></div>
+      <div class="fact enc step"><b class="h">Stability to small translations</b><p>Move the digit by a pixel: the pooled map stays more similar to the original than the feature map does, because a strong response usually stays inside its window. The stability is partial, not perfect.</p></div>
+      <div class="fact step"><b class="h">Across channels too</b><p>Pooling can also be done across feature maps (e.g. the maximum over several filters) to become insensitive to other changes.</p></div>
+    </div>
+    <div class="src"><b>Sources</b>Goodfellow et al. (2016) §9.3; MIT 6.7960 Lecture 4 (pooling; stability w.r.t. small translations; pooling across channels). The stability numbers are computed live for this digit and filter.</div>
+  </div>
+</section>
+
+<section class="slide" id="layers" data-sec="cnn" data-title="Types of layers in a CNN">
+  <div class="wrap">
+    <div class="kicker">Part II · How CNNs work (6/8) · the building blocks</div>
+    <h2>A CNN is built from three types of layers</h2>
+    <div id="w-layers" class="mt"></div>
+    <div class="grid g3">
+      <div class="fact enc step"><b class="h">Feature extractor</b><p><b>Convolution</b> (+ ReLU) and <b>pooling</b> layers turn the image into feature maps.</p></div>
+      <div class="fact step"><b class="h">Classifier</b><p><b>Flatten</b> + <b>dense</b> layers (+ softmax) turn the final feature maps into class probabilities: the MLP of Part I.</p></div>
+      <div class="fact step"><b class="h">What is learned</b><p>Only convolutional and dense layers have parameters; all are trained together by backpropagation.</p></div>
+    </div>
+    <div class="src"><b>Sources</b>LeCun, Bottou, Bengio &amp; Haffner (1998); Goodfellow et al. (2016) §9.1–9.3; Zhang et al., <i>Dive into Deep Learning</i> ch. 7.</div>
+  </div>
+</section>
+
+<section class="slide" id="anatomy" data-sec="cnn" data-title="A CNN for classification">
+  <div class="wrap">
+    <div class="kicker">Part II · How CNNs work (7/8) · putting it together</div>
+    <h2>A CNN for classification: downsample step by step, then classify</h2>
     <div id="w-anatomy" class="mt"></div>
     <div class="grid g3">
-      <div class="fact enc step"><b class="h">5,258 parameters in total</b><p>80 + 1,168 + 4,010 — versus 795,010 for the dense 784 → 1000 → 10 network from the course exercise.</p></div>
-      <div class="fact step"><b class="h">Convolution and pooling extract; dense layers decide</b><p>The last blocks are the Class 5 classifier: softmax over classes, cross-entropy loss.</p></div>
-      <div class="fact step"><b class="h">Lineage</b><p>LeNet-5 (LeCun et al., 1998) in spirit: convolution → pooling → … → fully connected, trained end-to-end by backpropagation.</p></div>
+      <div class="fact enc step"><b class="h">Why downsample?</b><p>Fewer numbers means less computation and a much smaller dense layer: 400 inputs here instead of 26×26×8 = 5,408 without any downsampling. It also widens the receptive field.</p></div>
+      <div class="fact enc step"><b class="h">Pooling or stride</b><p>A convolution with <b>stride 2</b> moves the filter two pixels at a time, also halving the map — and the downsampling is then learned rather than fixed.</p></div>
+      <div class="fact step"><b class="h">5,258 parameters</b><p>80 + 1,168 + 4,010 — versus 795,010 for the dense 784 → 1000 → 10 network of the MNIST exercise (LeNet-5 style; LeCun et al., 1998).</p></div>
     </div>
-    <div class="src"><b>Sources</b>LeCun, Bottou, Bengio &amp; Haffner (1998); Zhang et al., <i>Dive into Deep Learning</i> §7.6 (LeNet); course Class 5 (slides 35–38: softmax, cross-entropy).</div>
+    <div class="src"><b>Sources</b>LeCun et al. (1998); MIT 6.7960 Lecture 4 (downsampling; strided operations); Zhang et al., <i>Dive into Deep Learning</i> §7.3, §7.6; course Class 5 (slides 35–38).</div>
   </div>
 </section>
 
-<section class="slide" id="evidence" data-sec="cnn" data-title="Evidence: deep CNNs reset computer vision">
+<section class="slide" id="extras" data-sec="cnn" data-title="Other ingredients, briefly">
   <div class="wrap">
-    <div class="kicker">Act 2 · How CNNs work (6/6) · why it mattered</div>
-    <h2>Deep CNNs reset computer vision in 2012</h2>
+    <div class="kicker">Part II · How CNNs work (8/8) · briefly</div>
+    <h2>A few other ingredients that help CNNs train well</h2>
+    <div class="grid g3 mt">
+      <div class="card enc step"><h3>Dropout</h3><p class="small" style="color:var(--ink-2)">During training, randomly switch off some units. The network cannot rely on any single unit, which reduces overfitting (Srivastava et al., 2014).</p></div>
+      <div class="card enc step"><h3>Batch normalisation</h3><p class="small" style="color:var(--ink-2)">Normalise the values flowing through the network, batch by batch: faster and more stable training (Ioffe &amp; Szegedy, 2015).</p></div>
+      <div class="card enc step"><h3>Data augmentation</h3><p class="small" style="color:var(--ink-2)">Create extra training images by randomly shifting, flipping or cropping them, so the network sees more variety.</p></div>
+    </div>
+    <div class="src"><b>Sources</b>Srivastava, Hinton, Krizhevsky, Sutskever &amp; Salakhutdinov (2014); Ioffe &amp; Szegedy (2015); Goodfellow et al. (2016) ch. 7 (regularisation).</div>
+  </div>
+</section>
+
+<section class="slide" id="evidence" data-sec="cnn" data-title="Evidence: deep CNNs transformed vision">
+  <div class="wrap">
+    <div class="kicker">Part II · Why it mattered</div>
+    <h2>In 2012, a deep CNN won ImageNet by a wide margin</h2>
     <div class="grid g-side-r mt" style="align-items:center">
       <figure class="fig">
         <img src="img/imagenet-error-history.svg" alt="Scatter plot of the best ImageNet competition result of each team per year, with error rate on the vertical axis. In 2012 one entry, AlexNet, lies far below all the others, and error keeps falling in the following years.">
         <figcaption><b>Real results of the ImageNet classification competition</b> (best entry per team, up to 10 entries per year). Figure: Gkrusze (2018), “ImageNet error rate history (just systems)”, Wikimedia Commons, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a> (<a href="https://commons.wikimedia.org/wiki/File:ImageNet_error_rate_history_(just_systems).svg" target="_blank" rel="noopener">source</a>). Data: ILSVRC results (Russakovsky et al., 2015).</figcaption>
       </figure>
       <div>
-        <div class="fact enc step"><b class="h">The 2012 jump</b><p>The lone point far below all others is AlexNet (≈ 60 M parameters, trained on two GPUs): 15.3 % top-5 error vs. 26.2 % for the runner-up (Krizhevsky et al., 2012).</p></div>
-        <div class="fact enc step"><b class="h">Then: deeper</b><p>8 → 22 → 152 layers; by 2015 residual networks reached 3.6 % (He et al., 2016) — below the 5.1 % of one trained human annotator on this benchmark (Russakovsky et al., 2015).</p></div>
-        <div class="fact step"><b class="h">Why it matters for social science</b><p>Satellite imagery to estimate poverty (Jean et al., 2016); audits showing face-analysis systems err far more on darker-skinned women (Buolamwini &amp; Gebru, 2018).</p></div>
+        <div class="fact enc step"><b class="h">The 2012 jump</b><p>The lone point far below all others is AlexNet: 15.3 % top-5 error vs. 26.2 % for the runner-up (Krizhevsky et al., 2012).</p></div>
+        <div class="fact enc step"><b class="h">Then: deeper networks</b><p>8 → 22 → 152 layers; by 2015 residual networks reached 3.6 % (He et al., 2016).</p></div>
+        <div class="fact step"><b class="h">For social science</b><p>Satellite imagery to estimate poverty (Jean et al., 2016); audits showing face-analysis systems err far more on darker-skinned women (Buolamwini &amp; Gebru, 2018).</p></div>
       </div>
     </div>
     <div class="src"><b>Sources</b>Russakovsky et al. (2015); Krizhevsky et al. (2012); He et al. (2016); Jean et al. (2016); Buolamwini &amp; Gebru (2018). The figure is reproduced unmodified from Wikimedia Commons under its licence.</div>
@@ -293,113 +333,18 @@
 <section class="slide" id="explainer" data-sec="cnn" data-title="Live demo: a trained CNN">
   <div class="wrap">
     <button class="btn small wide-btn" data-wide>⤢ Full width</button>
-    <div class="kicker">Act 2 · Live demo · a trained CNN, layer by layer</div>
+    <div class="kicker">Part II · Live demo · a trained CNN, layer by layer</div>
     <h2 style="font-size:1.55rem">All the pieces in one trained network</h2>
     <div class="hands-on mt">
       <div class="embed"><div class="loading">Loading CNN Explainer…</div><iframe data-src="https://poloclub.github.io/cnn-explainer/" title="CNN Explainer" loading="lazy" allow="fullscreen"></iframe></div>
       <div class="side">
-        <div class="fact enc step"><b class="h">The same layers</b><p>Input 64×64×3 → conv → conv → pool → conv → conv → pool → softmax over 10 classes (“Tiny VGG”).</p></div>
+        <div class="fact enc step"><b class="h">The same layers</b><p>Input 64×64×3 → conv → conv → pool → conv → conv → pool → softmax over 10 classes.</p></div>
         <div class="fact enc step"><b class="h">Filters and maps</b><p>Click a conv_1_1 neuron: 3 kernels (one per colour channel) of 3×3; the layer has 10 × 3 × 9 + 10 = <b>280</b> parameters.</p></div>
-        <div class="fact step"><b class="h">Depth</b><p>Early maps are fine; late maps are coarser and more class-specific — the hierarchy.</p></div>
+        <div class="fact step"><b class="h">Depth</b><p>Early maps are fine; late maps are coarser and more class-specific.</p></div>
         <p class="tiny">Use <b>⤢ Full width</b> (top right) — the tool needs room.</p>
       </div>
     </div>
     <div class="src"><b>Source</b>Wang, Turko, Shaikh, Park, Das, Hohman, Kahng &amp; Chau (2021), <i>CNN Explainer</i>, IEEE TVCG. <a href="https://poloclub.github.io/cnn-explainer/" target="_blank" rel="noopener">poloclub.github.io/cnn-explainer</a> (embedded, © the authors).</div>
-  </div>
-</section>
-
-<!-- =====================================================================
-     ACT 3 · AUTOENCODERS
-     ===================================================================== -->
-<section class="slide" id="aeconcept" data-sec="ae" data-title="Autoencoders">
-  <div class="wrap">
-    <div class="kicker">Act 3 · Autoencoders · learning without labels</div>
-    <h2>An autoencoder compresses an input into a code and rebuilds it — the input is its own label</h2>
-    <div class="grid g-side mt" style="align-items:center">
-      <div class="card flat" style="padding:.8rem">
-        <svg viewBox="0 0 660 270" class="ae-diagram" role="img" aria-label="Autoencoder: input x goes through an encoder to a small code z, then through a decoder to a reconstruction x-hat. The loss compares x-hat with x.">
-          <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#667180"/></marker></defs>
-          <rect x="10" y="45" width="70" height="160" rx="8" fill="#e9e6dc" stroke="#b9b49f"/><text x="45" y="120" text-anchor="middle" font-weight="800" font-size="20">x</text><text x="45" y="142" text-anchor="middle" font-size="11" fill="#555">input</text><text x="45" y="156" text-anchor="middle" font-size="11" fill="#555">64 pixels</text>
-          <polygon points="95,45 265,95 265,155 95,205" fill="#dff3ef" stroke="#0d8f7f" stroke-width="2.5"/><text x="180" y="122" text-anchor="middle" font-weight="800" fill="#0a6b5e" font-size="16">Encoder</text><text x="180" y="140" text-anchor="middle" font-size="11" fill="#0a6b5e">compress</text>
-          <rect x="285" y="98" width="60" height="54" rx="9" fill="#fff" stroke="#17202c" stroke-width="3"/><text x="315" y="130" text-anchor="middle" font-weight="800" font-size="20">z</text>
-          <text x="315" y="82" text-anchor="middle" font-size="11" font-weight="800" fill="#17202c">BOTTLENECK</text><text x="315" y="176" text-anchor="middle" font-size="11" fill="#555">k numbers</text><text x="315" y="190" text-anchor="middle" font-size="11" fill="#555">(the “code”)</text>
-          <polygon points="365,95 535,45 535,205 365,155" fill="#ece5fa" stroke="#7c4fd6" stroke-width="2.5"/><text x="450" y="122" text-anchor="middle" font-weight="800" fill="#5b36a8" font-size="16">Decoder</text><text x="450" y="140" text-anchor="middle" font-size="11" fill="#5b36a8">rebuild</text>
-          <rect x="550" y="45" width="70" height="160" rx="8" fill="#e9e6dc" stroke="#b9b49f"/><text x="585" y="120" text-anchor="middle" font-weight="800" font-size="20">x̂</text><text x="585" y="142" text-anchor="middle" font-size="11" fill="#555">output</text><text x="585" y="156" text-anchor="middle" font-size="11" fill="#555">64 pixels</text>
-          <g stroke="#667180" stroke-width="2" marker-end="url(#ah)"><line x1="80" y1="125" x2="94" y2="125"/><line x1="265" y1="125" x2="284" y2="125"/><line x1="345" y1="125" x2="364" y2="125"/><line x1="535" y1="125" x2="549" y2="125"/></g>
-          <path d="M585 210 L585 245 L45 245 L45 212" fill="none" stroke="#e8712d" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#ah)"/>
-          <text x="315" y="262" text-anchor="middle" font-size="12" font-weight="800" fill="#b3510f">loss: how different is x̂ from x?  L = ‖x − x̂‖²</text>
-        </svg>
-        <div class="grid g2 mt" style="gap:.6rem;font-size:.78rem">
-          <div class="stat" style="padding:.45rem .6rem"><b>Classifier (CNN)</b><br>x → features → <b>label</b> (needs labels)</div>
-          <div class="stat" style="padding:.45rem .6rem"><b>Autoencoder</b><br>x → code → <b>x̂ ≈ x</b> (the input is the label)</div>
-        </div>
-      </div>
-      <div>
-        <div class="fact enc step"><b class="h">Encoder: x → z</b><p>Compresses the input into a code with far fewer numbers (the <b>bottleneck</b>). For images it can be the convolutional stack we just built.</p></div>
-        <div class="fact dec step"><b class="h">Decoder: z → x̂</b><p>Rebuilds the input from the code alone (convolutional decoders use up-sampling or transposed convolutions).</p></div>
-        <div class="fact step"><b class="h">Learning</b><p>Minimise the reconstruction error with the same backprop. <b>No labels</b>: unsupervised / self-supervised.</p></div>
-        <div class="fact step"><b class="h">Relation to PCA</b><p>With linear layers and squared error the code spans PCA’s subspace (Baldi &amp; Hornik, 1989); non-linear layers go beyond it (Hinton &amp; Salakhutdinov, 2006).</p></div>
-      </div>
-    </div>
-    <div class="src"><b>Sources</b>Hinton &amp; Salakhutdinov (2006); Baldi &amp; Hornik (1989); Goodfellow et al. (2016) ch. 14; Weng (2018), <i>From autoencoder to Beta-VAE</i>.</div>
-  </div>
-</section>
-
-<section class="slide" id="aelab" data-sec="ae" data-title="Live: an autoencoder learns a code">
-  <div class="wrap">
-    <div class="kicker">Act 3 · Live: a real autoencoder, trained in your browser</div>
-    <h2 style="font-size:1.7rem">Two numbers can rebuild a digit — and the code organises itself without labels</h2>
-    <div id="w-ae" class="mt"></div>
-    <div class="grid g3 mt">
-      <div class="fact enc step"><b class="h">Signal = reconstruction</b><p>Trained on unlabeled digits; the error falls from the “average digit” baseline.</p></div>
-      <div class="fact enc step"><b class="h">Structure emerges</b><p>Digits cluster in the code space although labels were never used (colours show the true digit, for display only).</p></div>
-      <div class="fact warn step"><b class="h">Holes</b><p>Between clusters the decoder produces blobs: rebuilding ≠ generating.</p></div>
-    </div>
-    <div class="src"><b>Method</b>Own implementation: 64 → 32 → k → 32 → 64, tanh hidden units, sigmoid output, Adam, minibatch 32. Data: 1,000 images from the UCI <i>Optical Recognition of Handwritten Digits</i> set (Alpaydin &amp; Kaynak), 8×8 pixels; 800 for training, 200 held out. For k &gt; 2 the map shows a 2-D (PCA) projection of the code.</div>
-  </div>
-</section>
-
-<section class="slide" id="aeuseful" data-sec="ae" data-title="What makes a latent code useful">
-  <div class="wrap">
-    <div class="kicker">Act 3 · What makes a learned code useful</div>
-    <h2>A good code is compact, informative, organised and reusable — the bottleneck is the design knob</h2>
-    <div class="grid g4 mt">
-      <div class="card enc step"><h3>Compact</h3><p class="small" style="color:var(--ink-2)">Far fewer numbers than the input (64 → 2…16).</p></div>
-      <div class="card enc step"><h3>Informative</h3><p class="small" style="color:var(--ink-2)">The input can be (largely) rebuilt from it.</p></div>
-      <div class="card enc step"><h3>Organised</h3><p class="small" style="color:var(--ink-2)">Similar inputs lie close together in code space.</p></div>
-      <div class="card enc step"><h3>Reusable</h3><p class="small" style="color:var(--ink-2)">Feeds clustering, search, classification with few labels, anomaly detection.</p></div>
-    </div>
-    <div class="fact warn step mt2"><b class="h">The bottleneck trade-off</b><p><b>Too wide</b>: the network can copy its input (the identity) and learn nothing. <b>Too narrow</b>: blurry rebuilds. Zero error is not the goal. A common cure for the identity shortcut: <b>denoising</b> autoencoders, which rebuild the clean input from a corrupted one (Vincent et al., 2008).</p></div>
-    <div class="src"><b>Sources</b>Goodfellow et al. (2016) §14.1–14.5; Vincent, Larochelle, Bengio &amp; Manzagol (2008); Bengio, Courville &amp; Vincent (2013).</div>
-  </div>
-</section>
-
-<section class="slide" id="embeddings" data-sec="ae" data-title="Embeddings in the real world">
-  <div class="wrap">
-    <div class="kicker">Act 3 · Learned codes in practice · embeddings</div>
-    <h2>Learned codes are called <i>embeddings</i> — and they are used everywhere</h2>
-    <div class="grid g-side-r mt" style="align-items:start">
-      <div class="card flat" style="padding:.8rem">
-        <svg viewBox="0 0 400 300" style="width:100%;height:auto" role="img" aria-label="Schematic of word embeddings: the arrow from man to woman equals the arrow from king to queen.">
-          <defs><marker id="ah8" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#667180"/></marker></defs>
-          <polygon points="70,230 70,100 270,60 270,190" fill="#e6edfd" opacity=".55"/>
-          <g stroke="#2859e0" stroke-width="3" marker-end="url(#ah8)"><line x1="70" y1="226" x2="70" y2="108"/><line x1="270" y1="186" x2="270" y2="68"/></g>
-          <g stroke="#e8712d" stroke-width="3" stroke-dasharray="6 4" marker-end="url(#ah8)"><line x1="78" y1="230" x2="262" y2="192"/><line x1="78" y1="100" x2="262" y2="62"/></g>
-          <g font-size="14" font-weight="800" text-anchor="middle"><circle cx="70" cy="230" r="7" fill="#17202c"/><text x="70" y="256">man</text><circle cx="70" cy="100" r="7" fill="#17202c"/><text x="70" y="86">woman</text><circle cx="270" cy="190" r="7" fill="#17202c"/><text x="270" y="216">king</text><circle cx="270" cy="60" r="7" fill="#17202c"/><text x="270" y="46">queen</text></g>
-          <text x="46" y="170" font-size="11" fill="#2859e0" font-weight="700" text-anchor="end">“female”</text><text x="170" y="214" font-size="11" fill="#a14a12" font-weight="700" text-anchor="middle">“royal”</text>
-          <text x="200" y="288" font-size="12" font-weight="800" text-anchor="middle" fill="#3d4856">king − man + woman ≈ queen</text>
-        </svg>
-        <div class="tiny" style="margin-top:.3rem">Schematic of the idea in 2-D — not real coordinates. Real embeddings have 100s of dimensions (Mikolov et al., 2013).</div>
-      </div>
-      <div>
-        <div class="fact enc step"><b class="h">Words → meaning as geometry</b><p>word2vec places words with similar meanings close together; directions encode relations such as gender or royalty (Mikolov et al., 2013).</p></div>
-        <div class="fact enc step"><b class="h">Social science with word embeddings</b><p>Embeddings trained on 100 years of text quantify changing gender and ethnic stereotypes (Garg et al., 2018); map the meaning of “class” (Kozlowski et al., 2019); place parties and politicians on ideological scales from speeches (Rheault &amp; Cochrane, 2020).</p></div>
-        <div class="fact enc step"><b class="h">Faces and images</b><p>FaceNet maps each face to a 128-number embedding: photos of the same person land close together, different people far apart — used for verification and clustering (Schroff et al., 2015).</p></div>
-        <div class="fact enc step"><b class="h">Recommendations</b><p>YouTube represents videos and users as embeddings and retrieves candidates by proximity (Covington et al., 2016).</p></div>
-        <div class="fact enc step"><b class="h">Networks</b><p>node2vec embeds each node of a network, e.g. for link prediction and community detection (Grover &amp; Leskovec, 2016).</p></div>
-      </div>
-    </div>
-    <div class="src"><b>Sources</b>Mikolov et al. (2013a, 2013b); Garg, Schiebinger, Jurafsky &amp; Zou (2018); Kozlowski, Taddy &amp; Evans (2019); Rheault &amp; Cochrane (2020); Schroff, Kalenichenko &amp; Philbin (2015); Covington, Adams &amp; Sargin (2016); Grover &amp; Leskovec (2016).</div>
   </div>
 </section>
 
@@ -411,83 +356,260 @@
     <div class="kicker" style="justify-content:center">Break</div>
     <h2 style="font-size:3rem">Break — 10 minutes</h2>
     <div id="w-break" class="mt"></div>
-    <p class="small mt2" style="max-width:34rem">Second half: GANs, then an intuition for recurrent networks, transformers and ChatGPT.</p>
+    <p class="small mt2" style="max-width:34rem">Next: representation learning, then GANs.</p>
   </div>
 </section>
 
 <!-- =====================================================================
-     ACT 4 · GANs
+     PART III · REPRESENTATION LEARNING
      ===================================================================== -->
-<section class="slide" id="genvsdisc" data-sec="gan" data-title="Discriminative vs generative">
+<section class="slide" id="paradigm" data-sec="rep" data-title="From engineering features to learning them">
   <div class="wrap">
-    <div class="kicker">Act 4 · GANs · from rebuilding to creating</div>
-    <h2>To create, a model must capture how the data is distributed — not just where the boundary is</h2>
-    <div id="w-gen" class="mt"></div>
-    <table class="t cmp step">
-      <tr><th>Task</th><th>Question</th><th>Models</th><th>Examples</th></tr>
-      <tr><td>Discriminate</td><td>“Which class is this x?”</td><td class="mono">p(y | x)</td><td>CNN classifier, logistic regression</td></tr>
-      <tr><td>Reconstruct</td><td>“Can you rebuild <i>this</i> x from its code?”</td><td class="mono">x → z → x̂</td><td>Autoencoder</td></tr>
-      <tr><td>Generate</td><td>“Make a <i>new</i> x that looks like the data.”</td><td class="mono">x ~ p(x)</td><td>VAE, GAN, diffusion, language models</td></tr>
-    </table>
-    <div class="src"><b>Sources</b>Ng &amp; Jordan (2001); Goodfellow et al. (2016) ch. 20; Kingma &amp; Welling (2014) (VAEs shape the latent space so it can be sampled). Toy data: two Gaussian classes; the classifier is the exact Bayes posterior for those Gaussians.</div>
+    <div class="kicker">Part III · Representation learning</div>
+    <h2>From engineering features to learning them</h2>
+    <div class="card flat mt" style="padding:.8rem">
+      <svg viewBox="0 0 840 300" style="width:100%;height:auto" role="img" aria-label="Classical pipeline: image, hand-designed features, trained classifier. Deep learning pipeline: image, learned features, classifier, trained together.">
+        <defs><marker id="pa-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#667180"/></marker></defs>
+        <text x="10" y="22" font-size="13" font-weight="800" fill="#667180">BEFORE: filter engineering</text>
+        <rect x="10" y="40" width="110" height="70" rx="10" fill="#e9e6dc" stroke="#b9b49f"/><text x="65" y="80" text-anchor="middle" font-weight="800" font-size="14">image</text>
+        <rect x="190" y="40" width="230" height="70" rx="10" fill="#f1efe8" stroke="#8a93a3" stroke-width="2" stroke-dasharray="6 4"/><text x="305" y="68" text-anchor="middle" font-weight="800" font-size="14">hand-designed filters</text><text x="305" y="88" text-anchor="middle" font-size="11" fill="#555">edges, corners, HOG … chosen by experts</text>
+        <rect x="490" y="40" width="110" height="70" rx="10" fill="#fff" stroke="#8a93a3"/><text x="545" y="68" text-anchor="middle" font-weight="800" font-size="13">features</text><text x="545" y="88" text-anchor="middle" font-size="11" fill="#555">numbers</text>
+        <rect x="660" y="40" width="170" height="70" rx="10" fill="#e6edfd" stroke="#2859e0" stroke-width="2"/><text x="745" y="68" text-anchor="middle" font-weight="800" font-size="14">classifier</text><text x="745" y="88" text-anchor="middle" font-size="11" fill="#1c3f9e">the only part that is learned</text>
+        <g stroke="#667180" stroke-width="2" marker-end="url(#pa-ah)"><line x1="120" y1="75" x2="188" y2="75"/><line x1="420" y1="75" x2="488" y2="75"/><line x1="600" y1="75" x2="658" y2="75"/></g>
+        <text x="10" y="170" font-size="13" font-weight="800" fill="#0a6b5e">NOW: representation learning</text>
+        <rect x="10" y="188" width="110" height="70" rx="10" fill="#e9e6dc" stroke="#b9b49f"/><text x="65" y="228" text-anchor="middle" font-weight="800" font-size="14">image</text>
+        <rect x="190" y="188" width="230" height="70" rx="10" fill="#dff3ef" stroke="#0d8f7f" stroke-width="2.5"/><text x="305" y="216" text-anchor="middle" font-weight="800" fill="#0a6b5e" font-size="14">learned filters</text><text x="305" y="236" text-anchor="middle" font-size="11" fill="#0a6b5e">convolutional layers, found from data</text>
+        <rect x="490" y="188" width="110" height="70" rx="10" fill="#fff" stroke="#0d8f7f"/><text x="545" y="216" text-anchor="middle" font-weight="800" font-size="13">features</text><text x="545" y="236" text-anchor="middle" font-size="11" fill="#555">a representation</text>
+        <rect x="660" y="188" width="170" height="70" rx="10" fill="#e6edfd" stroke="#2859e0" stroke-width="2"/><text x="745" y="216" text-anchor="middle" font-weight="800" font-size="14">classifier</text><text x="745" y="236" text-anchor="middle" font-size="11" fill="#1c3f9e">learned too</text>
+        <g stroke="#667180" stroke-width="2" marker-end="url(#pa-ah)"><line x1="120" y1="223" x2="188" y2="223"/><line x1="420" y1="223" x2="488" y2="223"/><line x1="600" y1="223" x2="658" y2="223"/></g>
+        <path d="M190 276 L830 276" stroke="#0d8f7f" stroke-width="3"/><path d="M190 270 L190 282 M830 270 L830 282" stroke="#0d8f7f" stroke-width="3"/><text x="510" y="296" text-anchor="middle" font-size="12" font-weight="800" fill="#0a6b5e">trained together, end to end, by backpropagation</text>
+      </svg>
+    </div>
+    <div class="grid g3 mt">
+      <div class="fact step"><b class="h">Filter engineering</b><p>For decades, computer-vision experts designed the features by hand (edges, SIFT, HOG; Dalal &amp; Triggs, 2005), and only the classifier was trained.</p></div>
+      <div class="fact enc step"><b class="h">Learning the filters</b><p>A CNN learns its filters from the data, together with the classifier.</p></div>
+      <div class="fact dec step"><b class="h">Representation learning</b><p>This is <b>representation learning</b>: the network learns, from data, how to represent its input in a way that makes the task easy (Bengio et al., 2013).</p></div>
+    </div>
+    <div class="src"><b>Sources</b>Bengio, Courville &amp; Vincent (2013); Dalal &amp; Triggs (2005); Goodfellow et al. (2016) ch. 1; course Class 5 (slides 39–41).</div>
   </div>
 </section>
 
-<section class="slide" id="ganconcept" data-sec="gan" data-title="GANs: a two-player game">
+<section class="slide" id="replearn" data-sec="rep" data-title="Representation learning: data to a vector">
   <div class="wrap">
-    <div class="kicker">Act 4 · GANs · adversarial training</div>
-    <h2>GANs turn generation into a game: a forger (generator) against a detective (discriminator)</h2>
+    <div class="kicker">Part III · Representation learning</div>
+    <h2>Representation learning: an encoder maps data to a vector in a representation space</h2>
+    <div class="card flat mt" style="padding:.8rem">
+      <svg viewBox="0 0 840 300" style="width:100%;height:auto" role="img" aria-label="Images go through an encoder and become points in a representation space where similar digits are close together.">
+        <defs><marker id="rl-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#667180"/></marker></defs>
+        <g font-weight="800" font-size="30" text-anchor="middle"><rect x="20" y="40" width="80" height="80" rx="8" fill="#17202c"/><text x="60" y="95" fill="#fff">7</text><rect x="20" y="130" width="80" height="80" rx="8" fill="#17202c"/><text x="60" y="185" fill="#fff">3</text><rect x="20" y="220" width="80" height="60" rx="8" fill="#17202c"/><text x="60" y="262" fill="#fff">7</text></g>
+        <text x="60" y="30" text-anchor="middle" font-size="12" font-weight="800">data x</text>
+        <polygon points="170,70 330,110 330,190 170,230" fill="#dff3ef" stroke="#0d8f7f" stroke-width="2.5"/><text x="250" y="148" text-anchor="middle" font-weight="800" fill="#0a6b5e" font-size="16">Encoder</text><text x="250" y="168" text-anchor="middle" font-size="11" fill="#0a6b5e">e.g. a CNN</text>
+        <g stroke="#667180" stroke-width="2" marker-end="url(#rl-ah)"><line x1="104" y1="150" x2="168" y2="150"/><line x1="332" y1="150" x2="398" y2="150"/></g>
+        <g><rect x="410" y="132" width="26" height="36" rx="5" fill="#fff" stroke="#17202c" stroke-width="2.5"/><rect x="440" y="132" width="26" height="36" rx="5" fill="#fff" stroke="#17202c" stroke-width="2.5"/><rect x="470" y="132" width="26" height="36" rx="5" fill="#fff" stroke="#17202c" stroke-width="2.5"/></g>
+        <text x="453" y="122" text-anchor="middle" font-weight="800" font-size="13">latent vector z</text>
+        <path d="M500 150 L548 150" stroke="#667180" stroke-width="2" marker-end="url(#rl-ah)"/>
+        <rect x="560" y="30" width="260" height="250" rx="12" fill="#fff" stroke="#17202c" stroke-width="2"/>
+        <text x="690" y="52" text-anchor="middle" font-weight="800" font-size="13">representation space</text>
+        <g><circle cx="620" cy="100" r="9" fill="#2859e0"/><circle cx="640" cy="118" r="9" fill="#2859e0"/><circle cx="612" cy="130" r="9" fill="#2859e0"/><circle cx="632" cy="96" r="9" fill="#2859e0"/><text x="605" y="168" font-size="12" font-weight="800" fill="#2859e0">7s</text>
+          <circle cx="760" cy="220" r="9" fill="#e8712d"/><circle cx="740" cy="238" r="9" fill="#e8712d"/><circle cx="772" cy="244" r="9" fill="#e8712d"/><text x="740" y="268" font-size="12" font-weight="800" fill="#e8712d">3s</text>
+          <circle cx="760" cy="100" r="9" fill="#1f8a4c"/><circle cx="780" cy="118" r="9" fill="#1f8a4c"/><circle cx="748" cy="124" r="9" fill="#1f8a4c"/><text x="745" y="160" font-size="12" font-weight="800" fill="#1f8a4c">0s</text></g>
+        <text x="690" y="284" text-anchor="middle" font-size="9" fill="#667180">schematic</text>
+      </svg>
+    </div>
+    <div class="grid g3 mt">
+      <div class="fact step"><b class="h">From data to a vector</b><p>The encoder turns each input into a <b>latent vector</b>: a short list of numbers, a point in a representation space.</p></div>
+      <div class="fact enc step"><b class="h">What makes it meaningful?</b><p>It keeps the information we need, and similar inputs end up <b>close together</b>.</p></div>
+      <div class="fact step"><b class="h">The CNN is already an encoder</b><p>The convolutional layers of a classifier compute such a representation. How can we learn one <i>without</i> labels? Next slide.</p></div>
+    </div>
+    <div class="src"><b>Sources</b>Bengio, Courville &amp; Vincent (2013); Goodfellow et al. (2016) ch. 15 (representation learning). Illustration is schematic, not real data.</div>
+  </div>
+</section>
+
+<section class="slide" id="head" data-sec="rep" data-title="Classifier vs autoencoder">
+  <div class="wrap">
+    <div class="kicker">Part III · Representation learning · autoencoders</div>
+    <h2>Same encoder, different head: replace the classifier with a decoder</h2>
+    <div id="w-head" class="mt"></div>
+    <div class="grid g3 mt">
+      <div class="fact enc step"><b class="h">Classifier</b><p>Encoder (conv layers) → latent vector → dense layer + softmax → class. The loss compares the prediction with the <b>label</b>.</p></div>
+      <div class="fact dec step"><b class="h">Autoencoder</b><p>Replace the dense head with a <b>decoder</b> that rebuilds the image (using up-sampling layers). The loss compares the output with the <b>input itself</b>: no labels needed.</p></div>
+      <div class="fact step"><b class="h">The bottleneck</b><p>The latent vector has far fewer numbers than the image, so the network must keep only what matters to rebuild it.</p></div>
+    </div>
+    <div class="src"><b>Sources</b>Hinton &amp; Salakhutdinov (2006); Goodfellow et al. (2016) ch. 14; MIT 6.7960 Lecture 4 (encoder–decoder); Weng (2018), <i>From autoencoder to Beta-VAE</i>.</div>
+  </div>
+</section>
+
+<section class="slide" id="aelab" data-sec="rep" data-title="Live: an autoencoder learns a latent vector">
+  <div class="wrap">
+    <div class="kicker">Part III · Live: a real autoencoder, trained in your browser</div>
+    <h2 style="font-size:1.7rem">Two numbers can rebuild a digit, and similar digits end up close together</h2>
+    <div id="w-ae" class="mt"></div>
+    <div class="grid g3 mt">
+      <div class="fact enc step"><b class="h">Learning by reconstruction</b><p>The error falls from the “average digit” baseline as the network learns.</p></div>
+      <div class="fact enc step"><b class="h">Structure emerges</b><p>Digits cluster in the latent space although labels were never used (colours are for display only).</p></div>
+      <div class="fact warn step"><b class="h">Latent size matters</b><p>Smaller latent vector: blurrier rebuilds. Larger: sharper, but less compressed.</p></div>
+    </div>
+    <div class="src"><b>Method</b>Own implementation: 64 → 32 → k → 32 → 64, tanh hidden units, sigmoid output, Adam, minibatch 32. Data: 1,000 images from the UCI <i>Optical Recognition of Handwritten Digits</i> set (Alpaydin &amp; Kaynak), 8×8 pixels; 800 for training, 200 held out. For k &gt; 2 the map shows a 2-D (PCA) projection of the latent vector.</div>
+  </div>
+</section>
+
+<section class="slide" id="pca" data-sec="rep" data-title="Autoencoder and PCA">
+  <div class="wrap">
+    <div class="kicker">Part III · Representation learning · autoencoders and PCA</div>
+    <h2>Autoencoders and PCA: two ways to compress into a few numbers</h2>
+    <div id="w-pca" class="mt"></div>
+    <div class="grid g3 mt">
+      <div class="fact enc step"><b class="h">PCA</b><p>Finds the best <i>linear</i> projection onto k directions and rebuilds from it.</p></div>
+      <div class="fact dec step"><b class="h">Linear autoencoder = PCA</b><p>An autoencoder with linear layers and squared error learns the same subspace as PCA (Baldi &amp; Hornik, 1989).</p></div>
+      <div class="fact step"><b class="h">Non-linear: more flexible</b><p>With non-linear layers the autoencoder can follow curved structure that a straight projection cannot (Hinton &amp; Salakhutdinov, 2006).</p></div>
+    </div>
+    <div class="src"><b>Sources</b>Baldi &amp; Hornik (1989); Hinton &amp; Salakhutdinov (2006); Goodfellow et al. (2016) §14.1. PCA computed live on the 800 training digits; the autoencoder points come from the lab on the previous slide.</div>
+  </div>
+</section>
+
+<section class="slide" id="comppred" data-sec="rep" data-title="Compression vs prediction">
+  <div class="wrap">
+    <div class="kicker">Part III · Representation learning</div>
+    <h2>Two ways to learn a representation: compress, or predict</h2>
+    <div class="grid g2 mt" style="align-items:stretch">
+      <div class="card dec step"><h3>Compress</h3><p class="small" style="color:var(--ink-2)">Learn a vector that is enough to <b>rebuild the input</b>.</p><ul class="clean small" style="color:var(--ink-2)"><li>Autoencoder: x → z → x̂</li><li>Needs no labels</li><li>The bottleneck forces what is kept</li></ul></div>
+      <div class="card acc step"><h3>Predict</h3><p class="small" style="color:var(--ink-2)">Learn a vector that is enough to <b>predict something</b> about the input.</p><ul class="clean small" style="color:var(--ink-2)"><li>A label: the CNN classifier (supervised)</li><li>A missing part of the input, e.g. fill in a hidden region of an image (self-supervised; Pathak et al., 2016)</li><li>What is predicted decides what the representation captures</li></ul></div>
+    </div>
+    <div class="src"><b>Sources</b>Bengio, Courville &amp; Vincent (2013); Pathak, Krähenbühl, Donahue, Darrell &amp; Efros (2016); Goodfellow et al. (2016) ch. 14–15.</div>
+  </div>
+</section>
+
+<section class="slide" id="embeddings" data-sec="rep" data-title="Representations in the real world">
+  <div class="wrap">
+    <div class="kicker">Part III · Representation learning · in practice</div>
+    <h2>Learned representations are used everywhere — they are often called embeddings</h2>
+    <div class="grid g-side-r mt" style="align-items:start">
+      <div class="card flat" style="padding:.8rem">
+        <svg viewBox="0 0 400 300" style="width:100%;height:auto" role="img" aria-label="Schematic of word embeddings: the arrow from man to woman equals the arrow from king to queen.">
+          <defs><marker id="ah8" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#667180"/></marker></defs>
+          <polygon points="70,230 70,100 270,60 270,190" fill="#e6edfd" opacity=".55"/>
+          <g stroke="#2859e0" stroke-width="3" marker-end="url(#ah8)"><line x1="70" y1="226" x2="70" y2="108"/><line x1="270" y1="186" x2="270" y2="68"/></g>
+          <g stroke="#e8712d" stroke-width="3" stroke-dasharray="6 4" marker-end="url(#ah8)"><line x1="78" y1="230" x2="262" y2="192"/><line x1="78" y1="100" x2="262" y2="62"/></g>
+          <g font-size="14" font-weight="800" text-anchor="middle"><circle cx="70" cy="230" r="7" fill="#17202c"/><text x="70" y="256">man</text><circle cx="70" cy="100" r="7" fill="#17202c"/><text x="70" y="86">woman</text><circle cx="270" cy="190" r="7" fill="#17202c"/><text x="270" y="216">king</text><circle cx="270" cy="60" r="7" fill="#17202c"/><text x="270" y="46">queen</text></g>
+          <text x="200" y="288" font-size="12" font-weight="800" text-anchor="middle" fill="#3d4856">king − man + woman ≈ queen</text>
+        </svg>
+        <div class="tiny" style="margin-top:.3rem">Schematic of the idea in 2-D — not real coordinates (Mikolov et al., 2013).</div>
+      </div>
+      <div>
+        <div class="fact enc step"><b class="h">Words</b><p>word2vec places words with similar meanings close together (Mikolov et al., 2013).</p></div>
+        <div class="fact enc step"><b class="h">Social science</b><p>Embeddings trained on 100 years of text quantify changing gender and ethnic stereotypes (Garg et al., 2018), map the meaning of “class” (Kozlowski et al., 2019) and place parties on ideological scales (Rheault &amp; Cochrane, 2020).</p></div>
+        <div class="fact enc step"><b class="h">Faces</b><p>FaceNet maps each face to a 128-number vector: the same person lands close by, different people far apart (Schroff et al., 2015).</p></div>
+        <div class="fact enc step"><b class="h">Recommendations and networks</b><p>YouTube retrieves videos by proximity of embeddings (Covington et al., 2016); node2vec embeds the nodes of a network (Grover &amp; Leskovec, 2016).</p></div>
+      </div>
+    </div>
+    <div class="src"><b>Sources</b>Mikolov et al. (2013a, 2013b); Garg, Schiebinger, Jurafsky &amp; Zou (2018); Kozlowski, Taddy &amp; Evans (2019); Rheault &amp; Cochrane (2020); Schroff, Kalenichenko &amp; Philbin (2015); Covington, Adams &amp; Sargin (2016); Grover &amp; Leskovec (2016).</div>
+  </div>
+</section>
+
+<section class="slide" id="ex2" data-sec="rep" data-title="Exercise: autoencoders">
+  <div class="wrap">
+    <div class="kicker">Part III · Exercise</div>
+    <h2>Exercise: think like an autoencoder</h2>
+    <p class="lead">A 28×28 digit (784 numbers) is encoded into a latent vector.</p>
+    <div class="grid g2 mt">
+      <div class="card"><b>1.</b> What does the autoencoder’s loss compare?<div><button class="btn small" data-reveal style="margin-top:.4rem">Show answer</button><div class="reveal-box">The rebuilt image x̂ with the <b>input x</b> — no labels.</div></div></div>
+      <div class="card"><b>2.</b> The latent vector is made as long as the input (784 numbers). What could the network learn, and why is that useless?<div><button class="btn small" data-reveal style="margin-top:.4rem">Show answer</button><div class="reveal-box">It can simply <b>copy</b> the input (the identity): zero error, but no compression and no useful representation.</div></div></div>
+      <div class="card"><b>3.</b> You want to plot all digits on a page. Which latent size do you pick, and what do you lose?<div><button class="btn small" data-reveal style="margin-top:.4rem">Show answer</button><div class="reveal-box">k = 2 (a point on a plane). You lose detail: the rebuilt digits are blurry.</div></div></div>
+      <div class="card"><b>4.</b> An autoencoder trained only on digits is shown a drawing of a cat. What do you expect — and how could that be useful?<div><button class="btn small" data-reveal style="margin-top:.4rem">Show answer</button><div class="reveal-box">A <b>poor reconstruction</b> (large error): it only knows how to rebuild digits. A large error can flag anomalies.</div></div></div>
+    </div>
+    <div class="src"><b>Sources</b>Goodfellow et al. (2016) §14.1–14.2; Vincent et al. (2008). The lab on slide “Live: an autoencoder” (tab <i>Draw your own</i>) shows question 4 live.</div>
+  </div>
+</section>
+
+<!-- =====================================================================
+     PART IV · GANs
+     ===================================================================== -->
+<section class="slide" id="genvsdisc" data-sec="gan" data-title="Generative modelling">
+  <div class="wrap">
+    <div class="kicker">Part IV · Generative models</div>
+    <h2>Generative modelling: learn how the data is distributed, so we can sample new data</h2>
+    <div id="w-gen" class="mt"></div>
+    <table class="t cmp step">
+      <tr><th>Task</th><th>Direction</th><th>Question</th></tr>
+      <tr><td>Discriminate</td><td class="mono">x → label</td><td>“Which class is this x?”</td></tr>
+      <tr><td>Represent</td><td class="mono">x → z</td><td>“What is a good summary of x?” (Part III)</td></tr>
+      <tr><td>Generate</td><td class="mono">random z → new x</td><td>“Make a new x that looks like the data.”</td></tr>
+    </table>
+    <div class="src"><b>Sources</b>Ng &amp; Jordan (2001); Goodfellow et al. (2016) ch. 20. Toy data: two Gaussian classes; the classifier is the exact Bayes posterior for those Gaussians.</div>
+  </div>
+</section>
+
+<section class="slide" id="ganconcept" data-sec="gan" data-title="GAN architecture">
+  <div class="wrap">
+    <div class="kicker">Part IV · GANs · architecture</div>
+    <h2>A GAN: a generator creates fakes, a discriminator tries to catch them</h2>
     <div class="grid g-side mt" style="align-items:start">
       <div>
         <div class="card flat" style="padding:.6rem">
-        <svg id="gan-svg" class="gan-svg" data-step="0" viewBox="0 0 780 345" role="img" aria-label="GAN diagram: noise goes into the generator which produces fake samples; real samples and fake samples go into the discriminator which outputs the probability of real; gradients flow back from the discriminator to the generator.">
-          <defs><marker id="ah2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#667180"/></marker>
-                <marker id="ah3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#c0392b"/></marker></defs>
-          <g data-s="2 4"><rect x="30" y="20" width="150" height="76" rx="10" fill="#e9e6dc" stroke="#b9b49f"/><text x="105" y="52" text-anchor="middle" font-weight="800" font-size="16">Real data</text><text x="105" y="72" text-anchor="middle" font-size="11" fill="#555">photos from the dataset</text></g>
-          <g data-s="1 4"><rect x="30" y="238" width="130" height="70" rx="10" fill="#f4f2ea" stroke="#b9b49f"/><text x="95" y="268" text-anchor="middle" font-weight="800" font-size="15">noise z</text><text x="95" y="287" text-anchor="middle" font-size="11" fill="#555">random numbers</text>
-            <g fill="#8a93a3"><circle cx="50" cy="250" r="2"/><circle cx="72" cy="296" r="2"/><circle cx="130" cy="252" r="2"/><circle cx="144" cy="294" r="2"/></g></g>
-          <g data-s="1 3 4"><rect x="230" y="222" width="170" height="100" rx="12" fill="#fdeadd" stroke="#e8712d" stroke-width="3"/><text x="315" y="265" text-anchor="middle" font-weight="800" fill="#a14a12" font-size="18">Generator G</text><text x="315" y="287" text-anchor="middle" font-size="12" fill="#a14a12">the forger</text></g>
-          <g data-s="1 2 4"><rect x="470" y="238" width="140" height="70" rx="10" fill="#fff" stroke="#e8712d" stroke-dasharray="5 4" stroke-width="2"/><text x="540" y="268" text-anchor="middle" font-weight="800" font-size="15">fake sample</text><text x="540" y="287" text-anchor="middle" font-size="11" fill="#555">G(z)</text></g>
-          <g data-s="2 3 4"><rect x="290" y="56" width="200" height="112" rx="12" fill="#e6edfd" stroke="#2859e0" stroke-width="3"/><text x="390" y="104" text-anchor="middle" font-weight="800" fill="#1c3f9e" font-size="18">Discriminator D</text><text x="390" y="126" text-anchor="middle" font-size="12" fill="#1c3f9e">the detective</text></g>
-          <g data-s="2 3 4"><rect x="600" y="82" width="150" height="60" rx="10" fill="#fff" stroke="#2859e0" stroke-width="2"/><text x="675" y="108" text-anchor="middle" font-weight="800" font-size="15">P(real)</text><text x="675" y="127" text-anchor="middle" font-size="11" fill="#555">0 = fake … 1 = real</text></g>
-          <g stroke="#667180" stroke-width="2.5" fill="none" marker-end="url(#ah2)">
-            <line data-s="2 4" x1="182" y1="62" x2="288" y2="95"/><line data-s="1 4" x1="162" y1="272" x2="228" y2="272"/><line data-s="1 4" x1="402" y1="272" x2="468" y2="272"/>
-            <line data-s="2 4" x1="520" y1="236" x2="440" y2="170"/><line data-s="2 3 4" x1="492" y1="112" x2="598" y2="112"/></g>
-          <path data-s="3 4" d="M330 170 C 318 190, 316 205, 316 220" fill="none" stroke="#c0392b" stroke-width="3" stroke-dasharray="7 5" marker-end="url(#ah3)"/>
-          <text data-s="3 4" x="150" y="200" font-size="12" font-weight="800" fill="#c0392b">feedback: “here is how to fool me”</text>
-          <text data-s="2 4" x="300" y="46" font-size="12" font-weight="800" fill="#1c3f9e">update D → better detective</text>
-          <text data-s="3 4" x="230" y="338" font-size="12" font-weight="800" fill="#a14a12">update G → better forger</text>
-        </svg>
+          <svg id="gan-svg" class="gan-svg" data-step="0" viewBox="0 0 840 330" role="img" aria-label="GAN: random noise goes into the generator, which produces fake samples; fake samples and real samples go into the discriminator, which outputs real or fake.">
+            <defs><marker id="ah2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#667180"/></marker></defs>
+            <g data-s="1 4"><rect x="10" y="45" width="120" height="70" rx="10" fill="#f4f2ea" stroke="#b9b49f"/><text x="70" y="75" text-anchor="middle" font-weight="800" font-size="15">noise z</text><text x="70" y="95" text-anchor="middle" font-size="11" fill="#555">random numbers</text></g>
+            <g data-s="1 3 4"><rect x="175" y="25" width="160" height="110" rx="12" fill="#fdeadd" stroke="#e8712d" stroke-width="3"/><text x="255" y="72" text-anchor="middle" font-weight="800" fill="#a14a12" font-size="18">Generator G</text><text x="255" y="95" text-anchor="middle" font-size="12" fill="#a14a12">the forger</text></g>
+            <g data-s="1 2 4"><rect x="385" y="45" width="120" height="70" rx="10" fill="#fff" stroke="#e8712d" stroke-dasharray="5 4" stroke-width="2"/><text x="445" y="75" text-anchor="middle" font-weight="800" font-size="15">fake sample</text><text x="445" y="95" text-anchor="middle" font-size="11" fill="#555">G(z)</text></g>
+            <g data-s="2 4"><rect x="385" y="205" width="120" height="70" rx="10" fill="#e9e6dc" stroke="#b9b49f"/><text x="445" y="235" text-anchor="middle" font-weight="800" font-size="15">real sample</text><text x="445" y="255" text-anchor="middle" font-size="11" fill="#555">from the dataset</text></g>
+            <g data-s="2 3 4"><rect x="555" y="110" width="150" height="110" rx="12" fill="#e6edfd" stroke="#2859e0" stroke-width="3"/><text x="630" y="157" text-anchor="middle" font-weight="800" fill="#1c3f9e" font-size="18">Discriminator D</text><text x="630" y="180" text-anchor="middle" font-size="12" fill="#1c3f9e">the detective</text></g>
+            <g data-s="2 3 4"><rect x="735" y="135" width="95" height="60" rx="10" fill="#fff" stroke="#2859e0" stroke-width="2"/><text x="782" y="162" text-anchor="middle" font-weight="800" font-size="14">real or</text><text x="782" y="180" text-anchor="middle" font-weight="800" font-size="14">fake?</text></g>
+            <g stroke="#667180" stroke-width="2.5" fill="none" marker-end="url(#ah2)">
+              <line data-s="1 4" x1="132" y1="80" x2="173" y2="80"/><line data-s="1 4" x1="337" y1="80" x2="383" y2="80"/>
+              <line data-s="2 4" x1="507" y1="90" x2="553" y2="140"/><line data-s="2 4" x1="507" y1="240" x2="553" y2="190"/><line data-s="2 3 4" x1="707" y1="165" x2="733" y2="165"/></g>
+            <text data-s="2 4" x="555" y="260" font-size="12" font-weight="800" fill="#1c3f9e">D is trained to classify correctly</text>
+            <text data-s="3 4" x="175" y="175" font-size="12" font-weight="800" fill="#a14a12">G is trained so that D says “real”</text>
+          </svg>
         </div>
         <div class="row mt"><button class="btn primary" id="gan-next">Next step ▸</button><button class="btn" id="gan-all">Show all</button></div>
-        <div class="eq mt step">min<sub>G</sub> max<sub>D</sub> V(D,G) = E<sub>x∼p_data</sub>[log D(x)] + E<sub>z∼p_z</sub>[log(1 − D(G(z)))]</div>
       </div>
       <div>
         <ol class="steps-list" id="gan-steps">
-          <li><b>Forge.</b> G turns random noise into a fake sample.</li>
-          <li><b>Judge.</b> D sees real and fake samples and outputs P(real); it is trained to classify <i>correctly</i>.</li>
-          <li><b>Improve the forger.</b> G is trained so that D calls its fakes “real”; the gradient flows <b>through D</b> into G. G never sees real data directly.</li>
-          <li><b>Repeat.</b> Both improve in turn. At the theoretical optimum G matches the data and D can only guess: D(x) = ½ (Goodfellow et al., 2014).</li>
+          <li><b>Generate.</b> G turns random noise into a fake sample.</li>
+          <li><b>Judge.</b> D sees real and fake samples and says which is which; it is trained to be right.</li>
+          <li><b>Improve the forger.</b> G is trained to make D say “real”; it learns only through D’s feedback.</li>
+          <li><b>Repeat.</b> Both improve, taking turns.</li>
         </ol>
-        <div class="fact dec mt step"><b class="h">Link to what we built</b><p>G has the shape of a <b>decoder</b> (noise instead of a code → image) and D is a classifier. In DCGAN both are CNNs: D a convolutional classifier, G built from transposed convolutions (Radford et al., 2016).</p></div>
+        <div class="fact dec mt step"><b class="h">Link to Part III</b><p>G has the shape of a <b>decoder</b>: it maps a random vector to an image. D is a classifier. In DCGAN both are CNNs (Radford et al., 2016).</p></div>
       </div>
     </div>
     <div class="src"><b>Sources</b>Goodfellow et al. (2014); Goodfellow (2016), <i>NIPS tutorial: GANs</i>; Radford, Metz &amp; Chintala (2016).</div>
   </div>
 </section>
 
+<section class="slide" id="gantrain" data-sec="gan" data-title="How a GAN is trained">
+  <div class="wrap">
+    <div class="kicker">Part IV · GANs · training</div>
+    <h2>Training alternates between the two players</h2>
+    <div class="step mt"><div class="stages">
+      <div class="stage"><div class="n">1 · SAMPLE</div><h3>Real and fake</h3><p>Take a batch of real images and a batch of noise; G turns the noise into fakes.</p></div>
+      <div class="sarrow">›</div>
+      <div class="stage"><div class="n">2 · UPDATE D</div><h3>Get better at detecting</h3><p>Label real = 1, fake = 0; improve D’s classification.</p></div>
+      <div class="sarrow">›</div>
+      <div class="stage"><div class="n">3 · UPDATE G</div><h3>Get better at fooling</h3><p>Send fakes through D; update G so that D outputs “real”.</p></div>
+      <div class="sarrow">↻</div>
+      <div class="stage done"><div class="n">REPEAT</div><h3>Many times</h3><p>Until the fakes look like the data.</p></div>
+    </div></div>
+    <div class="eq mt step">min<sub>G</sub> max<sub>D</sub> V(D,G) = E<sub>x∼p_data</sub>[log D(x)] + E<sub>z∼p_z</sub>[log(1 − D(G(z)))]</div>
+    <div class="grid g2 mt">
+      <div class="fact step"><b class="h">A game</b><p>D tries to maximise V, G to minimise it. At the theoretical optimum G matches the data and D can only guess (D(x) = ½).</p></div>
+      <div class="fact warn step"><b class="h">Delicate in practice</b><p>If D wins too easily, G gets no useful feedback; G may also learn to produce only a few kinds of samples (“mode collapse”).</p></div>
+    </div>
+    <div class="src"><b>Sources</b>Goodfellow et al. (2014); Goodfellow (2016), <i>NIPS tutorial: GANs</i>; Salimans et al. (2016).</div>
+  </div>
+</section>
+
 <section class="slide" id="ganlab" data-sec="gan" data-title="Live demo: GAN training">
   <div class="wrap">
     <button class="btn small wide-btn" data-wide>⤢ Full width</button>
-    <div class="kicker">Act 4 · GANs · live demo: adversarial training in action</div>
-    <h2 style="font-size:1.55rem">The discriminator’s verdict reshapes the generator’s samples, step by step</h2>
+    <div class="kicker">Part IV · GANs · live demo: training in action</div>
+    <h2 style="font-size:1.55rem">Watch the fakes move onto the real data</h2>
     <div class="hands-on mt">
       <div class="embed"><div class="loading">Loading GAN Lab…</div><iframe data-src="https://poloclub.github.io/ganlab/" title="GAN Lab" loading="lazy" allow="fullscreen"></iframe></div>
       <div class="side">
         <div class="fact step"><b class="h">Setting</b><p>2-D toy data. <b style="color:#1f8a4c">Green dots</b> = real samples, <b style="color:#8e44ad">purple dots</b> = G’s fakes.</p></div>
-        <div class="fact step"><b class="h">D’s opinion</b><p>Background colour = D’s P(real): green “looks real”, purple “looks fake”.</p></div>
-        <div class="fact gen step"><b class="h">G’s learning signal</b><p>Pink lines = the gradient through D telling each fake where to move.</p></div>
-        <div class="fact step"><b class="h">Over time</b><p>Fakes migrate onto the real data and D’s map flattens.</p></div>
+        <div class="fact step"><b class="h">D’s opinion</b><p>Background colour = D’s verdict: green “looks real”, purple “looks fake”.</p></div>
+        <div class="fact gen step"><b class="h">G’s feedback</b><p>Pink lines = how each fake should move to look more real.</p></div>
         <p class="tiny">To start from scratch: untick “Use pre-trained model”, press ↺, then ▶. Use <b>⤢ Full width</b> (top right).</p>
       </div>
     </div>
@@ -495,122 +617,102 @@
   </div>
 </section>
 
-<section class="slide" id="whichface" data-sec="gan" data-title="Which face is real?">
+<section class="slide" id="whichface" data-sec="gan" data-title="Exercise: which face is real?">
   <div class="wrap">
     <button class="btn small wide-btn" data-wide>⤢ Full width</button>
-    <div class="kicker">Act 4 · GANs · how good can they get?</div>
-    <h2 style="font-size:1.55rem">Which face is real?</h2>
+    <div class="kicker">Part IV · Exercise</div>
+    <h2 style="font-size:1.55rem">Exercise: which face is real? Who guesses the most?</h2>
     <div class="hands-on mt">
       <div class="embed"><div class="loading">Loading Which Face Is Real?…</div><iframe data-src="https://www.whichfaceisreal.com/" title="Which Face Is Real?" loading="lazy" allow="fullscreen"></iframe></div>
       <div class="side">
-        <div class="fact gen step"><b class="h">One of each pair is generated</b><p>Every pair has one real photograph and one face generated by StyleGAN (Karras et al., 2019).</p></div>
-        <div class="fact step"><b class="h">Five years apart</b><p>The first GAN samples (2014) were small and blurry (Goodfellow et al., 2014); StyleGAN faces are hard to tell from photographs.</p></div>
-        <p class="tiny">If the page looks cramped, use <b>⤢ Full width</b> or <a href="https://www.whichfaceisreal.com/" target="_blank" rel="noopener">open it in its own tab</a>.</p>
+        <div class="fact gen step"><b class="h">The task</b><p>Each pair has one real photograph and one face generated by a GAN (StyleGAN). Click the real one. Keep your score over 10 rounds.</p></div>
+        <div class="fact step"><b class="h">How good can GANs get?</b><p>The first GAN samples (2014) were small and blurry (Goodfellow et al., 2014); StyleGAN faces are hard to tell from photographs (Karras et al., 2019).</p></div>
+        <p class="tiny">If it looks cramped, use <b>⤢ Full width</b> or <a href="https://www.whichfaceisreal.com/" target="_blank" rel="noopener">open it in its own tab</a>.</p>
       </div>
     </div>
     <div class="src"><b>Source</b>Bergstrom &amp; West, <i>Which Face Is Real?</i>, University of Washington (Calling Bullshit project), <a href="https://www.whichfaceisreal.com/" target="_blank" rel="noopener">whichfaceisreal.com</a> (embedded, © the authors); Karras, Laine &amp; Aila (2019); Goodfellow et al. (2014).</div>
   </div>
 </section>
 
-<!-- =====================================================================
-     ACT 5 · BEYOND IMAGES (intuition only)
-     ===================================================================== -->
-<section class="slide" id="order" data-sec="beyond" data-title="Sequences: order matters">
+<section class="slide" id="cyclegan" data-sec="gan" data-title="CycleGAN: image translation">
   <div class="wrap">
-    <div class="kicker">Act 5 · Beyond images · sequences (intuition)</div>
-    <h2>In language, order carries meaning — a bag of numbers cannot see it</h2>
-    <div id="w-order" class="mt"></div>
-    <div class="grid g2">
-      <div class="fact warn step"><b class="h">Order and variable length</b><p>“Dog bites man” ≠ “man bites dog”, and sentences have no fixed length — both trouble an MLP.</p></div>
-      <div class="fact warn step"><b class="h">Long-range context</b><p>“The <b>keys</b> to the cabinet in the hall <b>are</b> missing”: the verb depends on a word far away, beyond a conv window.</p></div>
+    <div class="kicker">Part IV · GANs · an application</div>
+    <h2>CycleGAN: translating images from one domain to another, without paired examples</h2>
+    <div class="card flat mt" style="padding:.8rem">
+      <svg viewBox="0 0 860 280" style="width:100%;height:auto" role="img" aria-label="CycleGAN: a horse photo goes through generator G to become a zebra, then through generator F back to a horse; a discriminator checks the zebra against real zebra photos; the cycle loss compares the rebuilt horse with the original.">
+        <defs><marker id="cy-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#667180"/></marker></defs>
+        <rect x="10" y="95" width="120" height="80" rx="10" fill="#e9e6dc" stroke="#b9b49f"/><text x="70" y="130" text-anchor="middle" font-weight="800" font-size="15">horse</text><text x="70" y="150" text-anchor="middle" font-size="11" fill="#555">real photo x</text>
+        <rect x="170" y="90" width="130" height="90" rx="12" fill="#fdeadd" stroke="#e8712d" stroke-width="3"/><text x="235" y="130" text-anchor="middle" font-weight="800" fill="#a14a12" font-size="15">Generator G</text><text x="235" y="150" text-anchor="middle" font-size="11" fill="#a14a12">horse → zebra</text>
+        <rect x="340" y="95" width="120" height="80" rx="10" fill="#fff" stroke="#e8712d" stroke-dasharray="5 4" stroke-width="2"/><text x="400" y="130" text-anchor="middle" font-weight="800" font-size="15">zebra</text><text x="400" y="150" text-anchor="middle" font-size="11" fill="#555">fake G(x)</text>
+        <rect x="500" y="90" width="130" height="90" rx="12" fill="#fdeadd" stroke="#e8712d" stroke-width="3"/><text x="565" y="130" text-anchor="middle" font-weight="800" fill="#a14a12" font-size="15">Generator F</text><text x="565" y="150" text-anchor="middle" font-size="11" fill="#a14a12">zebra → horse</text>
+        <rect x="670" y="95" width="120" height="80" rx="10" fill="#fff" stroke="#e8712d" stroke-dasharray="5 4" stroke-width="2"/><text x="730" y="130" text-anchor="middle" font-weight="800" font-size="15">horse</text><text x="730" y="150" text-anchor="middle" font-size="11" fill="#555">rebuilt F(G(x))</text>
+        <g stroke="#667180" stroke-width="2.5" marker-end="url(#cy-ah)"><line x1="132" y1="135" x2="168" y2="135"/><line x1="302" y1="135" x2="338" y2="135"/><line x1="462" y1="135" x2="498" y2="135"/><line x1="632" y1="135" x2="668" y2="135"/></g>
+        <rect x="340" y="10" width="120" height="50" rx="10" fill="#e6edfd" stroke="#2859e0" stroke-width="2.5"/><text x="400" y="32" text-anchor="middle" font-weight="800" fill="#1c3f9e" font-size="13">Discriminator</text><text x="400" y="48" text-anchor="middle" font-size="10" fill="#1c3f9e">zebra: real or fake?</text>
+        <line x1="400" y1="94" x2="400" y2="62" stroke="#667180" stroke-width="2.5" marker-end="url(#cy-ah)" transform="rotate(0)"/>
+        <path d="M70 180 L70 245 L730 245 L730 180" fill="none" stroke="#c0392b" stroke-width="2.5" stroke-dasharray="7 5"/><text x="400" y="268" text-anchor="middle" font-size="13" font-weight="800" fill="#c0392b">cycle-consistency loss: the rebuilt horse must match the original horse</text>
+      </svg>
     </div>
-    <div class="src"><b>Sources</b>Elman (1990); Goodfellow et al. (2016) ch. 10 (introduction).</div>
-  </div>
-</section>
-
-<section class="slide" id="rnn" data-sec="beyond" data-title="Recurrent networks">
-  <div class="wrap">
-    <div class="kicker">Act 5 · Beyond images · recurrent networks (intuition)</div>
-    <h2>An RNN reads one word at a time, carrying a memory</h2>
-    <div class="grid g-side mt" style="align-items:start">
-      <div id="w-rnn"></div>
-      <div>
-        <div class="fact gen step"><b class="h">The same cell at every step</b><p>One set of weights is reused at every step — the trick of a conv filter, but over <b>time</b> instead of space.</p></div>
-        <div class="fact gen step"><b class="h">The memory is a fixed-size summary</b><p>Everything read so far is squeezed into one vector, so long-ago information fades.</p></div>
-        <div class="fact step"><b class="h">LSTM: a protected memory</b><p>LSTMs add learned gates that decide what to keep, forget and output, so important information survives longer (Hochreiter &amp; Schmidhuber, 1997).</p></div>
-      </div>
+    <div class="grid g3 mt">
+      <div class="fact gen step"><b class="h">No paired photos</b><p>We need no photo of the <i>same</i> scene as a horse and as a zebra: only a set of horse photos and a set of zebra photos.</p></div>
+      <div class="fact step"><b class="h">Two generators</b><p>G translates horse → zebra, F translates back. A discriminator checks that the translation looks like a real zebra.</p></div>
+      <div class="fact enc step"><b class="h">Cycle consistency</b><p>Translating there and back must return the original image — so the content is kept and only the style changes. Same idea: summer ↔ winter, photo ↔ painting.</p></div>
     </div>
-    <div class="src"><b>Sources</b>Elman (1990), <i>Finding structure in time</i>; Hochreiter &amp; Schmidhuber (1997); Goodfellow et al. (2016) §10.1–10.2, §10.10.</div>
-  </div>
-</section>
-
-<section class="slide" id="reach" data-sec="beyond" data-title="How far can each word see?">
-  <div class="wrap">
-    <div class="kicker">Act 5 · Beyond images · transformers (intuition)</div>
-    <h2>Attention lets every word look at every other word directly</h2>
-    <div id="w-reach" class="mt"></div>
-    <div class="grid g2">
-      <div class="fact step"><b class="h">Three ways to connect words</b><p>A CNN’s view grows slowly with depth; an RNN passes information along a chain; attention connects any two words in <b>one step</b>.</p></div>
-      <div class="fact step"><b class="h">Where it came from</b><p>Attention was first added to RNN translation models (Bahdanau et al., 2015); transformers (Vaswani et al., 2017) built whole networks from it.</p></div>
-    </div>
-    <div class="src"><b>Sources</b>Vaswani et al. (2017) §4 (why self-attention); Bahdanau, Cho &amp; Bengio (2015).</div>
-  </div>
-</section>
-
-<section class="slide" id="attention" data-sec="beyond" data-title="Self-attention">
-  <div class="wrap">
-    <div class="kicker">Act 5 · Beyond images · transformers (intuition)</div>
-    <h2>Self-attention: each word decides which other words matter, and blends them in</h2>
-    <div id="w-attn" class="mt"></div>
-    <div class="grid g2">
-      <div class="fact step"><b class="h">Ask, match, blend</b><p>Each word has a <b>query</b> (what I look for), a <b>key</b> (what I offer for matching) and a <b>value</b> (what I contribute). Better matches get more attention; the word becomes a blend of the others.</p></div>
-      <div class="fact enc step"><b class="h">A transformer stacks this</b><p>Many attention layers (each followed by an MLP), with word positions added so order is not lost — otherwise it would see a bag of words, like the shuffled pixels (Vaswani et al., 2017).</p></div>
-    </div>
-    <div class="src"><b>Sources</b>Vaswani et al. (2017) §3; Alammar (2018), <i>The Illustrated Transformer</i> (the “animal … it” example). <b>The numbers above are a hand-made 2-D toy to show the mechanism — not output of a trained model.</b></div>
-  </div>
-</section>
-
-<section class="slide" id="chatgpt" data-sec="beyond" data-title="From transformer to ChatGPT">
-  <div class="wrap">
-    <div class="kicker">Act 5 · Beyond images · ChatGPT (intuition)</div>
-    <h2>ChatGPT is a transformer trained to predict the next word — then tuned to be helpful</h2>
-    <div id="w-lm" class="mt"></div>
-    <div class="step mt"><div class="stages">
-      <div class="stage"><div class="n">1 · PRE-TRAINING</div><h3>Predict the next word</h3><p>On huge amounts of text; the text provides its own labels.</p></div>
-      <div class="sarrow">›</div>
-      <div class="stage"><div class="n">2 · INSTRUCTION TUNING</div><h3>Learn from examples</h3><p>Humans write good answers to instructions.</p></div>
-      <div class="sarrow">›</div>
-      <div class="stage"><div class="n">3 · HUMAN FEEDBACK</div><h3>Learn from preferences</h3><p>Humans rank answers; the model is steered towards the preferred ones.</p></div>
-      <div class="sarrow">›</div>
-      <div class="stage done"><div class="n">RESULT</div><h3>ChatGPT</h3><p>Released November 2022 (OpenAI, 2022).</p></div>
-    </div></div>
-    <div class="grid g2 mt">
-      <div class="fact step"><b class="h">Generation = predict, pick, repeat</b><p>The model gives a probability for every possible next word; one is picked (the temperature controls how adventurous), appended, and the loop repeats.</p></div>
-      <div class="fact warn step"><b class="h">Fluent is not the same as true</b><p>It produces plausible text learned from its training data, including that data’s gaps and biases (Ouyang et al., 2022; Bender et al., 2021).</p></div>
-    </div>
-    <div class="src"><b>Sources</b>Radford et al. (2018); Ouyang et al. (2022); OpenAI (2022), <i>Introducing ChatGPT</i>; Bender, Gebru, McMillan-Major &amp; Shmitchell (2021). The demo is a word-pair table counted from a 111-word text written for this class; it illustrates the loop, not ChatGPT’s quality.</div>
+    <div class="src"><b>Sources</b>Zhu, Park, Isola &amp; Efros (2017), <i>Unpaired image-to-image translation using cycle-consistent adversarial networks</i>; results: <a href="https://junyanz.github.io/CycleGAN/" target="_blank" rel="noopener">junyanz.github.io/CycleGAN</a>. Diagram simplified (the full method has a second, symmetric cycle and discriminator).</div>
   </div>
 </section>
 
 <!-- =====================================================================
-     SYNTHESIS
+     WRAP-UP
      ===================================================================== -->
-<section class="slide" id="synthesis" data-sec="wrap" data-title="Synthesis">
+<section class="slide" id="summary" data-sec="wrap" data-title="Summary">
   <div class="wrap">
-    <div class="kicker">Synthesis</div>
-    <h2>Each architecture is a bet on the structure of the data</h2>
-    <table class="t cmp mt" style="font-size:.84rem">
-      <tr><th>Architecture</th><th>Assumes about the data</th><th>Key mechanism</th><th>Good for</th><th>Main limitation</th></tr>
-      <tr><td style="color:#667180">MLP</td><td>no structure (a flat vector)</td><td>dense layers, backprop</td><td>tabular data</td><td>images and text are large and structured</td></tr>
-      <tr><td style="color:var(--enc)">CNN</td><td>local, repeated patterns on a grid</td><td>filters, weight sharing, pooling</td><td>images, audio</td><td>needs labels; fixed local view</td></tr>
-      <tr><td style="color:var(--dec)">Autoencoder</td><td>data lies near a low-dimensional structure</td><td>bottleneck, reconstruction</td><td>compact codes, embeddings, anomalies</td><td>codes are not guaranteed samplable</td></tr>
-      <tr><td style="color:var(--gen)">GAN</td><td>a critic can judge realism</td><td>generator vs. discriminator</td><td>sharp synthetic images</td><td>hard to train; mode collapse</td></tr>
-      <tr><td style="color:#b3862d">RNN · LSTM</td><td>order matters</td><td>memory, gates</td><td>sequences</td><td>slow; memory fades</td></tr>
-      <tr><td style="color:var(--accent)">Transformer</td><td>any word may relate to any other</td><td>attention</td><td>language, and more</td><td>data- and compute-hungry</td></tr>
-      <tr><td>ChatGPT</td><td>language is predictable</td><td>next-word prediction + human feedback</td><td>assistants</td><td>fluent but not always true</td></tr>
-    </table>
-    <div class="fact step mt2"><b class="h">Take-away</b><p>The shared thread is <b>representations</b>. Match the architecture to the structure of your data — and audit what the training data bakes in.</p></div>
-    <div class="src"><b>Sources</b>Synthesis of the preceding slides; see the reference list. On inductive bias: Goodfellow et al. (2016) ch. 9.</div>
+    <div class="kicker">Summary</div>
+    <h2>From MLPs to CNNs, to learned representations, to generating images</h2>
+    <div class="grid g4 mt">
+      <div class="card step" style="border-top:4px solid #8a93a3"><h3>MLP</h3><p class="small" style="color:var(--ink-2)">Linear combination + non-linearity. Universal, but assumes nothing and needs lots of data.</p></div>
+      <div class="card enc step"><h3>CNN</h3><p class="small" style="color:var(--ink-2)">Local filters with shared weights, stacked, with pooling: far fewer parameters, built for images.</p></div>
+      <div class="card dec step"><h3>Representation learning</h3><p class="small" style="color:var(--ink-2)">An encoder maps data to a latent vector; autoencoders learn it by reconstruction, without labels.</p></div>
+      <div class="card gen step"><h3>GAN</h3><p class="small" style="color:var(--ink-2)">Generator vs. discriminator: learn the data distribution well enough to create new data.</p></div>
+    </div>
+    <div class="src"><b>Sources</b>See the following slides: study questions and references.</div>
+  </div>
+</section>
+
+<section class="slide" id="q1" data-sec="wrap" data-title="Study questions (1/2)">
+  <div class="wrap">
+    <div class="kicker">What to study for the exam · 1/2</div>
+    <h2>After this class you should be able to answer… (CNNs)</h2>
+    <ol class="qs mt">
+      <li>What type of data are CNNs appropriate for, and why?</li>
+      <li>Which two properties of images do CNNs exploit?</li>
+      <li>Why does an MLP need far more parameters than a CNN on an image, and why is that a problem?</li>
+      <li>What does a filter (kernel) do, and what is a feature map?</li>
+      <li>How many parameters does a convolutional layer with F filters of size k×k on C input channels have?</li>
+      <li>What changes in a filter when the input is a colour image?</li>
+      <li>Why do we apply a non-linearity after each convolution?</li>
+      <li>What is the receptive field, and how does it grow with depth?</li>
+      <li>What do early and deep feature maps typically represent?</li>
+      <li>What does pooling do? Compare max and mean pooling, and explain the stability to small translations.</li>
+      <li>What is stride, and why do we downsample in a CNN classifier?</li>
+    </ol>
+  </div>
+</section>
+
+<section class="slide" id="q2" data-sec="wrap" data-title="Study questions (2/2)">
+  <div class="wrap">
+    <div class="kicker">What to study for the exam · 2/2</div>
+    <h2>…representation learning and GANs</h2>
+    <ol class="qs mt" style="counter-reset: q 11">
+      <li>What is representation learning, and how does it differ from feature engineering?</li>
+      <li>What are the roles of the encoder and the decoder in an autoencoder, and what does its loss compare?</li>
+      <li>What is the bottleneck for? What happens if it is too wide, or too narrow?</li>
+      <li>How are autoencoders and PCA related?</li>
+      <li>Compression versus prediction: how can each be used to learn a representation?</li>
+      <li>Give two real-world uses of learned representations (embeddings).</li>
+      <li>What is the difference between discriminative and generative modelling?</li>
+      <li>What are the roles of the generator and the discriminator in a GAN, and how are they trained?</li>
+      <li>What does a CycleGAN do, and what is cycle consistency?</li>
+    </ol>
   </div>
 </section>
 
@@ -620,20 +722,18 @@
 <section class="slide" id="refs1" data-sec="wrap" data-title="References (1/2)">
   <div class="wrap">
     <div class="kicker">References (1/2)</div>
-    <h2 style="font-size:1.5rem">From the MLP to autoencoders and embeddings</h2>
+    <h2 style="font-size:1.5rem">MLPs and convolutional networks</h2>
     <div class="refs mt">
-      <h4>MLPs and representations</h4>
-      <p>Bengio, Y., Courville, A., &amp; Vincent, P. (2013). Representation learning: A review and new perspectives. <i>IEEE TPAMI</i>, 35(8), 1798–1828.</p>
+      <h4>MLPs</h4>
       <p>Cybenko, G. (1989). Approximation by superpositions of a sigmoidal function. <i>Mathematics of Control, Signals and Systems</i>, 2, 303–314.</p>
       <p>Goodfellow, I., Bengio, Y., &amp; Courville, A. (2016). <i>Deep Learning</i>. MIT Press. deeplearningbook.org</p>
-      <p>Hornik, K., Stinchcombe, M., &amp; White, H. (1989). Multilayer feedforward networks are universal approximators. <i>Neural Networks</i>, 2(5), 359–366.</p>
+      <p>Hornik, K. (1991). Approximation capabilities of multilayer feedforward networks. <i>Neural Networks</i>, 4(2), 251–257.</p>
+      <p>Leshno, M., Lin, V. Y., Pinkus, A., &amp; Schocken, S. (1993). Multilayer feedforward networks with a nonpolynomial activation function can approximate any function. <i>Neural Networks</i>, 6(6), 861–867.</p>
       <p>Minsky, M., &amp; Papert, S. (1969). <i>Perceptrons</i>. MIT Press.</p>
-      <p>Nielsen, M. A. (2015). <i>Neural Networks and Deep Learning</i>. Determination Press. neuralnetworksanddeeplearning.com</p>
-      <p>Olah, C. (2014). Neural networks, manifolds, and topology. colah.github.io.</p>
       <p>Rumelhart, D. E., Hinton, G. E., &amp; Williams, R. J. (1986). Learning representations by back-propagating errors. <i>Nature</i>, 323, 533–536.</p>
-      <h4>Hierarchy, locality, CNNs</h4>
+      <h4>Convolutional networks</h4>
+      <p>Beery, S., Isola, P., &amp; Bernstein, J. (2024). Lecture 4: Architectures for grids. MIT 6.7960 Deep Learning, Fall 2024. MIT OpenCourseWare.</p>
       <p>Fukushima, K. (1980). Neocognitron. <i>Biological Cybernetics</i>, 36, 193–202.</p>
-      <p>Goodfellow, I., Warde-Farley, D., Mirza, M., Courville, A., &amp; Bengio, Y. (2013). Maxout networks. <i>ICML</i>.</p>
       <p>Hubel, D. H., &amp; Wiesel, T. N. (1962). Receptive fields, binocular interaction and functional architecture in the cat’s visual cortex. <i>J. Physiology</i>, 160, 106–154.</p>
       <p>LeCun, Y., et al. (1989). Backpropagation applied to handwritten zip code recognition. <i>Neural Computation</i>, 1(4), 541–551.</p>
       <p>LeCun, Y., Bottou, L., Bengio, Y., &amp; Haffner, P. (1998). Gradient-based learning applied to document recognition. <i>Proc. IEEE</i>, 86(11), 2278–2324.</p>
@@ -641,6 +741,8 @@
       <p>Luo, W., Li, Y., Urtasun, R., &amp; Zemel, R. (2016). Understanding the effective receptive field in deep convolutional neural networks. <i>NeurIPS</i>, 29.</p>
       <p>Olah, C., Mordvintsev, A., &amp; Schubert, L. (2017). Feature visualization. <i>Distill</i>.</p>
       <p>Zeiler, M. D., &amp; Fergus, R. (2014). Visualizing and understanding convolutional networks. <i>ECCV</i>.</p>
+      <p>Srivastava, N., Hinton, G., Krizhevsky, A., Sutskever, I., &amp; Salakhutdinov, R. (2014). Dropout: A simple way to prevent neural networks from overfitting. <i>JMLR</i>, 15, 1929–1958.</p>
+      <p>Ioffe, S., &amp; Szegedy, C. (2015). Batch normalization: Accelerating deep network training by reducing internal covariate shift. <i>ICML</i>.</p>
       <h4>ImageNet and applications</h4>
       <p>Gkrusze (2018). ImageNet error rate history (just systems). Wikimedia Commons, CC BY-SA 4.0.</p>
       <p>Russakovsky, O., et al. (2015). ImageNet Large Scale Visual Recognition Challenge. <i>IJCV</i>, 115, 211–252.</p>
@@ -648,18 +750,6 @@
       <p>Jean, N., et al. (2016). Combining satellite imagery and machine learning to predict poverty. <i>Science</i>, 353(6301), 790–794.</p>
       <p>Buolamwini, J., &amp; Gebru, T. (2018). Gender shades. <i>PMLR</i>, 81, 77–91.</p>
       <p>Wang, Z. J., et al. (2021). CNN Explainer: Learning convolutional neural networks with interactive visualization. <i>IEEE TVCG</i>, 27(2).</p>
-      <h4>Autoencoders and embeddings</h4>
-      <p>Baldi, P., &amp; Hornik, K. (1989). Neural networks and principal component analysis: Learning from examples without local minima. <i>Neural Networks</i>, 2(1), 53–58.</p>
-      <p>Hinton, G. E., &amp; Salakhutdinov, R. R. (2006). Reducing the dimensionality of data with neural networks. <i>Science</i>, 313, 504–507.</p>
-      <p>Vincent, P., Larochelle, H., Bengio, Y., &amp; Manzagol, P.-A. (2008). Extracting and composing robust features with denoising autoencoders. <i>ICML</i>.</p>
-      <p>Kingma, D. P., &amp; Welling, M. (2014). Auto-encoding variational Bayes. <i>ICLR</i>.</p>
-      <p>Mikolov, T., Chen, K., Corrado, G., &amp; Dean, J. (2013a). Efficient estimation of word representations in vector space. arXiv:1301.3781. · Mikolov, T., Yih, W., &amp; Zweig, G. (2013b). Linguistic regularities in continuous space word representations. <i>NAACL</i>.</p>
-      <p>Garg, N., Schiebinger, L., Jurafsky, D., &amp; Zou, J. (2018). Word embeddings quantify 100 years of gender and ethnic stereotypes. <i>PNAS</i>, 115(16), E3635–E3644.</p>
-      <p>Kozlowski, A. C., Taddy, M., &amp; Evans, J. A. (2019). The geometry of culture: Analyzing the meanings of class through word embeddings. <i>American Sociological Review</i>, 84(5), 905–949.</p>
-      <p>Rheault, L., &amp; Cochrane, C. (2020). Word embeddings for the analysis of ideological placement in parliamentary corpora. <i>Political Analysis</i>, 28(1), 112–133.</p>
-      <p>Schroff, F., Kalenichenko, D., &amp; Philbin, J. (2015). FaceNet: A unified embedding for face recognition and clustering. <i>CVPR</i>.</p>
-      <p>Covington, P., Adams, J., &amp; Sargin, E. (2016). Deep neural networks for YouTube recommendations. <i>RecSys</i>.</p>
-      <p>Grover, A., &amp; Leskovec, J. (2016). node2vec: Scalable feature learning for networks. <i>KDD</i>.</p>
     </div>
   </div>
 </section>
@@ -667,28 +757,35 @@
 <section class="slide" id="refs2" data-sec="wrap" data-title="References (2/2)">
   <div class="wrap">
     <div class="kicker">References (2/2)</div>
-    <h2 style="font-size:1.5rem">GANs, sequence models, transformers — and explainers</h2>
+    <h2 style="font-size:1.5rem">Representation learning, GANs and explainers</h2>
     <div class="refs mt">
+      <h4>Representation learning and autoencoders</h4>
+      <p>Bengio, Y., Courville, A., &amp; Vincent, P. (2013). Representation learning: A review and new perspectives. <i>IEEE TPAMI</i>, 35(8), 1798–1828.</p>
+      <p>Dalal, N., &amp; Triggs, B. (2005). Histograms of oriented gradients for human detection. <i>CVPR</i>.</p>
+      <p>Baldi, P., &amp; Hornik, K. (1989). Neural networks and principal component analysis: Learning from examples without local minima. <i>Neural Networks</i>, 2(1), 53–58.</p>
+      <p>Hinton, G. E., &amp; Salakhutdinov, R. R. (2006). Reducing the dimensionality of data with neural networks. <i>Science</i>, 313, 504–507.</p>
+      <p>Vincent, P., Larochelle, H., Bengio, Y., &amp; Manzagol, P.-A. (2008). Extracting and composing robust features with denoising autoencoders. <i>ICML</i>.</p>
+      <p>Pathak, D., Krähenbühl, P., Donahue, J., Darrell, T., &amp; Efros, A. A. (2016). Context encoders: Feature learning by inpainting. <i>CVPR</i>.</p>
+      <p>Mikolov, T., Chen, K., Corrado, G., &amp; Dean, J. (2013a). Efficient estimation of word representations in vector space. arXiv:1301.3781. · Mikolov, T., Yih, W., &amp; Zweig, G. (2013b). Linguistic regularities in continuous space word representations. <i>NAACL</i>.</p>
+      <p>Garg, N., Schiebinger, L., Jurafsky, D., &amp; Zou, J. (2018). Word embeddings quantify 100 years of gender and ethnic stereotypes. <i>PNAS</i>, 115(16), E3635–E3644.</p>
+      <p>Kozlowski, A. C., Taddy, M., &amp; Evans, J. A. (2019). The geometry of culture: Analyzing the meanings of class through word embeddings. <i>American Sociological Review</i>, 84(5), 905–949.</p>
+      <p>Rheault, L., &amp; Cochrane, C. (2020). Word embeddings for the analysis of ideological placement in parliamentary corpora. <i>Political Analysis</i>, 28(1), 112–133.</p>
+      <p>Schroff, F., Kalenichenko, D., &amp; Philbin, J. (2015). FaceNet: A unified embedding for face recognition and clustering. <i>CVPR</i>.</p>
+      <p>Covington, P., Adams, J., &amp; Sargin, E. (2016). Deep neural networks for YouTube recommendations. <i>RecSys</i>.</p>
+      <p>Grover, A., &amp; Leskovec, J. (2016). node2vec: Scalable feature learning for networks. <i>KDD</i>.</p>
       <h4>Generative models and GANs</h4>
       <p>Ng, A. Y., &amp; Jordan, M. I. (2001). On discriminative vs. generative classifiers. <i>NeurIPS</i>, 14.</p>
       <p>Goodfellow, I., et al. (2014). Generative adversarial nets. <i>NeurIPS</i>, 27. · Goodfellow, I. (2016). NIPS 2016 tutorial: GANs. arXiv:1701.00160.</p>
       <p>Radford, A., Metz, L., &amp; Chintala, S. (2016). Unsupervised representation learning with deep convolutional GANs. <i>ICLR</i>.</p>
+      <p>Salimans, T., et al. (2016). Improved techniques for training GANs. <i>NeurIPS</i>, 29.</p>
       <p>Karras, T., Laine, S., &amp; Aila, T. (2019). A style-based generator architecture for GANs. <i>CVPR</i>.</p>
+      <p>Zhu, J.-Y., Park, T., Isola, P., &amp; Efros, A. A. (2017). Unpaired image-to-image translation using cycle-consistent adversarial networks. <i>ICCV</i>.</p>
       <p>Kahng, M., et al. (2019). GAN Lab. <i>IEEE TVCG</i>, 25(1).</p>
       <p>Bergstrom, C., &amp; West, J. Which Face Is Real? University of Washington. <a href="https://www.whichfaceisreal.com/" target="_blank" rel="noopener">whichfaceisreal.com</a></p>
-      <h4>Sequence models, transformers and language models</h4>
-      <p>Elman, J. L. (1990). Finding structure in time. <i>Cognitive Science</i>, 14(2), 179–211.</p>
-      <p>Hochreiter, S., &amp; Schmidhuber, J. (1997). Long short-term memory. <i>Neural Computation</i>, 9(8), 1735–1780.</p>
-      <p>Bahdanau, D., Cho, K., &amp; Bengio, Y. (2015). Neural machine translation by jointly learning to align and translate. <i>ICLR</i>.</p>
-      <p>Vaswani, A., et al. (2017). Attention is all you need. <i>NeurIPS</i>, 30.</p>
-      <p>Radford, A., Narasimhan, K., Salimans, T., &amp; Sutskever, I. (2018). Improving language understanding by generative pre-training. OpenAI.</p>
-      <p>Ouyang, L., et al. (2022). Training language models to follow instructions with human feedback. <i>NeurIPS</i>, 35.</p>
-      <p>OpenAI (2022). Introducing ChatGPT. openai.com/blog/chatgpt</p>
-      <p>Bender, E. M., Gebru, T., McMillan-Major, A., &amp; Shmitchell, S. (2021). On the dangers of stochastic parrots. <i>FAccT</i>.</p>
       <h4>Explainers and interactive resources</h4>
       <p>Powell, V. <i>Image kernels explained visually</i>. <a href="https://setosa.io/ev/image-kernels/" target="_blank" rel="noopener">setosa.io</a> · Zhang, A., Lipton, Z. C., Li, M., &amp; Smola, A. J. <i>Dive into Deep Learning</i>. <a href="https://d2l.ai" target="_blank" rel="noopener">d2l.ai</a> · <a href="https://cs231n.github.io/convolutional-networks/" target="_blank" rel="noopener">CS231n ConvNet notes</a></p>
-      <p>Weng, L. (2018). From autoencoder to Beta-VAE. lilianweng.github.io · Olah, C. (2015). Understanding LSTM networks. colah.github.io · Alammar, J. (2018). The illustrated transformer. jalammar.github.io</p>
-      <p>Interactive: <a href="https://poloclub.github.io/cnn-explainer/" target="_blank" rel="noopener">CNN Explainer</a> · <a href="https://poloclub.github.io/ganlab/" target="_blank" rel="noopener">GAN Lab</a> · <a href="https://poloclub.github.io/transformer-explainer/" target="_blank" rel="noopener">Transformer Explainer</a> · <a href="https://setosa.io/ev/image-kernels/" target="_blank" rel="noopener">Image kernels</a> · <a href="https://playground.tensorflow.org/" target="_blank" rel="noopener">TensorFlow Playground</a> · <a href="https://distill.pub/2017/feature-visualization/" target="_blank" rel="noopener">Feature visualization</a> · <a href="https://huggingface.co/blog/Suzana/interactive-tools" target="_blank" rel="noopener">more tools</a></p>
+      <p>Weng, L. (2018). From autoencoder to Beta-VAE. lilianweng.github.io</p>
+      <p>Interactive: <a href="https://poloclub.github.io/cnn-explainer/" target="_blank" rel="noopener">CNN Explainer</a> · <a href="https://poloclub.github.io/ganlab/" target="_blank" rel="noopener">GAN Lab</a> · <a href="https://playground.tensorflow.org/" target="_blank" rel="noopener">TensorFlow Playground</a> · <a href="https://distill.pub/2017/feature-visualization/" target="_blank" rel="noopener">Feature visualization</a> · <a href="https://huggingface.co/blog/Suzana/interactive-tools" target="_blank" rel="noopener">more tools</a></p>
       <p>Data: Alpaydin, E., &amp; Kaynak, C. Optical Recognition of Handwritten Digits (UCI Machine Learning Repository; 8×8 version distributed with scikit-learn).</p>
     </div>
   </div>
@@ -696,18 +793,16 @@
 
 </div><!-- /deck -->
 
-<script src="js/common.js?v=6"></script>
-<script src="data/digits.js?v=6"></script>
-<script src="js/deck.js?v=6"></script>
-<script src="js/w-mlp.js?v=6"></script>
-<script src="js/w-why.js?v=6"></script>
-<script src="js/w-intro.js?v=7"></script>
-<script src="js/w-conv.js?v=6"></script>
-<script src="js/w-rf.js?v=6"></script>
-<script src="js/w-ae.js?v=6"></script>
-<script src="js/w-gen.js?v=6"></script>
-<script src="js/w-seq.js?v=6"></script>
-<script src="js/w-tf.js?v=6"></script>
-<script src="js/w-misc.js?v=6"></script>
+<script src="js/common.js?v=8"></script>
+<script src="data/digits.js?v=8"></script>
+<script src="js/deck.js?v=11"></script>
+<script src="js/w-mlp.js?v=8"></script>
+<script src="js/w-why.js?v=8"></script>
+<script src="js/w-intro.js?v=9"></script>
+<script src="js/w-conv.js?v=8"></script>
+<script src="js/w-rf.js?v=8"></script>
+<script src="js/w-ae.js?v=10"></script>
+<script src="js/w-gen.js?v=8"></script>
+<script src="js/w-misc.js?v=8"></script>
 </body>
 </html>

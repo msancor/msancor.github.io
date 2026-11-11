@@ -10,6 +10,6 @@ Materials for the course *Introduction to Machine Learning and Data Mining* (aca
 
 ## Classes
 
-- [**Class 8: Deep Learning (interactive slides)**](/teaching/ml-dm-2026-27/class-8/)
-  — from the MLP to convolutional networks, autoencoders, GANs, recurrent networks and transformers.
+- [**Class 8: Deep Learning (interactive slides)**](/teaching/ml-dm-2026-27/class-8/) — 12 November 2026.
+  From MLPs to convolutional networks, representation learning (autoencoders) and GANs.
   The slides are interactive and work best full-screen in a desktop browser (press `?` for shortcuts).

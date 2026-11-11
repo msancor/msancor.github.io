@@ -391,3 +391,8 @@ table.t.cmp td:first-child { font-weight: 800; white-space: nowrap; }
 .fig img { max-height: 58vh; max-width: 100%; width: auto; height: auto; }
 .fig figcaption { font-size: .66rem; color: var(--muted); margin-top: .4rem; line-height: 1.4; text-align: left; }
 .slide.fullw .hands-on.wide .embed { min-height: 30rem; }
+
+/* study questions */
+ol.qs { counter-reset: q; list-style: none; padding: 0; margin: 0; display: grid; gap: .55rem; max-width: 62rem; }
+ol.qs li { counter-increment: q; position: relative; padding: .55rem .9rem .55rem 3rem; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; font-size: 1.02rem; }
+ol.qs li::before { content: counter(q); position: absolute; left: .8rem; top: .5rem; width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 800; font-size: .8rem; display: grid; place-items: center; }
