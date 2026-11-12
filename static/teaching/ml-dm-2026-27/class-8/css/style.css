@@ -470,3 +470,4 @@ ol.qs li::before { content: counter(q); position: absolute; left: .8rem; top: .5
 .ga-fb2 { border: 2px dashed var(--gen); border-top: 0; border-radius: 0 0 14px 14px; height: 2.1rem; position: relative; text-align: center; font-size: .78rem; font-weight: 700; color: var(--gen); padding-top: .35rem; margin-top: -.5rem; }
 .ga-up { position: absolute; left: 3.2rem; top: -.95rem; font-size: .9rem; }
 .slide .hands-on.wide { grid-template-columns: minmax(0, 1fr); }
+.br-imgs { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .3rem; }

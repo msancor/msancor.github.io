@@ -127,4 +127,37 @@
     $('#ad-next').addEventListener('click', () => { di = (di * 7 + 13) % D.n; draw(); });
     Deck.on('aediag', draw);
   })();
+  /* =================================================================
+     4. DECODING RANDOM LATENT VECTORS OF A REAL AUTOENCODER
+     ================================================================= */
+  (function bridge() {
+    const root = document.getElementById('w-bridge'); if (!root || !window.__AE) return;
+    const D = U.digits(), N = D.n, COL = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
+    let ae = null, codes = null, box = null, seed = 1, pts = [];
+    root.innerHTML = `<div class="row" style="margin-bottom:.5rem;gap:.7rem"><span class="small" id="br-st">Training a small autoencoder (2-number latent vector)…</span><span class="spacer"></span><button class="btn primary" id="br-again" disabled>Draw new random vectors</button></div>
+      <div class="row top" style="gap:1.2rem;flex-wrap:wrap;align-items:flex-start">
+        <div><div class="tiny" style="font-weight:800">LATENT SPACE: one dot per real digit</div><canvas id="br-sc" style="border:1px solid var(--line);border-radius:10px;background:#fff"></canvas><div class="tiny">grey dots: where the encoder puts the 1,000 real digits<br><b style="color:var(--gen)">orange numbers</b>: random vectors drawn uniformly from this square</div></div>
+        <div style="flex:1;min-width:16rem"><div class="tiny" style="font-weight:800">DECODED FROM THE ORANGE VECTORS</div><div class="br-imgs" id="br-rnd"></div><div class="tiny" style="font-weight:800;margin-top:.8rem">FOR COMPARISON: DECODED FROM THE ENCODER’S OWN CODES</div><div class="br-imgs" id="br-real"></div></div></div>`;
+    const $ = (s) => root.querySelector(s);
+    const paint = (cv, a, cs) => { const c = U.fit(cv, 8 * cs, 8 * cs); for (let i = 0; i < 64; i++) { c.fillStyle = U.ink(a[i]); c.fillRect((i % 8) * cs, Math.floor(i / 8) * cs, cs, cs); } cv.style.border = '1px solid rgba(23,32,44,.25)'; };
+    function tiles(el, vecs, labels) { el.innerHTML = ''; vecs.forEach((z, i) => { const o = ae.decode(Float64Array.from(z), 1).o, w = document.createElement('div'); w.innerHTML = '<canvas></canvas><div class="tiny" style="text-align:center;font-weight:800;color:var(--gen)">' + (labels ? i + 1 : '') + '</div>'; el.appendChild(w); paint(w.querySelector('canvas'), o, 7); }); }
+    function draw() {
+      const rnd = U.mulberry32(seed * 977); pts = Array.from({ length: 8 }, () => [U.lerp(box.x0, box.x1, rnd()), U.lerp(box.y0, box.y1, rnd())]);
+      const S = 300, ctx = U.fit($('#br-sc'), S, S), X = (v) => 14 + (v - box.x0) / (box.x1 - box.x0) * (S - 28), Y = (v) => S - 14 - (v - box.y0) / (box.y1 - box.y0) * (S - 28);
+      for (let i = 0; i < N; i++) { ctx.fillStyle = '#9aa3b2'; ctx.beginPath(); ctx.arc(X(codes[i * 2]), Y(codes[i * 2 + 1]), 2.6, 0, 7); ctx.fill(); }
+      pts.forEach((p, i) => { ctx.fillStyle = '#e8712d'; ctx.font = '800 15px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.beginPath(); ctx.arc(X(p[0]), Y(p[1]), 10, 0, 7); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillText(i + 1, X(p[0]), Y(p[1]) + .5); });
+      tiles($('#br-rnd'), pts, true);
+      const rr = U.mulberry32(seed * 31 + 5), real = Array.from({ length: 8 }, () => { const i = Math.floor(rr() * N); return [codes[i * 2], codes[i * 2 + 1]]; }); tiles($('#br-real'), real, false);
+    }
+    function start() {
+      ae = new window.__AE.AE(2); let ep = 0;
+      (function chunk() { for (let i = 0; i < 8 && ep < 160; i++, ep++) ae.trainEpoch(); $('#br-st').textContent = 'Training a small autoencoder (2-number latent vector)… epoch ' + ep + ' / 160'; if (ep < 160) { setTimeout(chunk, 0); return; }
+        const X = new Float64Array(N * 64); for (let i = 0; i < N * 64; i++) X[i] = D.X[i]; const z = ae.encode(X, N).z; codes = z;
+        let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; for (let i = 0; i < N; i++) { x0 = Math.min(x0, z[i * 2]); x1 = Math.max(x1, z[i * 2]); y0 = Math.min(y0, z[i * 2 + 1]); y1 = Math.max(y1, z[i * 2 + 1]); }
+        const mx = (x1 - x0) * .05, my = (y1 - y0) * .05; box = { x0: x0 - mx, x1: x1 + mx, y0: y0 - my, y1: y1 + my };
+        $('#br-st').textContent = 'A real autoencoder, trained in your browser on 800 digits (160 epochs).'; $('#br-again').disabled = false; draw(); })();
+    }
+    $('#br-again').addEventListener('click', () => { seed++; draw(); });
+    let started = false; window.addEventListener('load', () => setTimeout(() => { if (!started) { started = true; start(); } }, 4000)); Deck.on('bridge', () => { if (!started) { started = true; setTimeout(start, 50); } else if (box) draw(); });
+  })();
 })();
