@@ -1,7 +1,8 @@
 /* Widgets that introduce CNNs and the break
    1. images : what a network receives when it handles an image (grid of numbers per colour channel)   (slide "images")
-   2. layers : the layer types of a CNN, with a clickable example network                                (slide "layers")
-   3. break  : countdown timer                                                                           (slide "break")  */
+   3. break  : countdown timer                                                                           (slide "break")
+   4. pool   : max / mean pooling and stability to small shifts                                          (slide "pooling")
+   */
 (function () {
   'use strict';
 
@@ -29,7 +30,7 @@
 
     root.innerHTML = `
       <div class="row" style="margin-bottom:.6rem">
-        <div class="seg" id="im-src"><button data-s="pic" class="on">Colour picture</button><button data-s="dig">Handwritten digit (greyscale)</button></div>
+        <div class="seg" id="im-src"><button data-s="dig" class="on">Greyscale: a handwritten digit</button><button data-s="pic">Colour picture</button></div>
         <div class="seg" id="im-ch"><button data-c="rgb" class="on">Colour</button><button data-c="0">R</button><button data-c="1">G</button><button data-c="2">B</button></div>
         <span class="small" id="im-hint">Hover over a pixel.</span>
       </div>
@@ -45,7 +46,7 @@
         </div>
       </div>`;
     const $ = (s) => root.querySelector(s), cv = $('#im-cv');
-    let src = 'pic', ch = 'rgb', hov = null;
+    let src = 'dig', ch = 'rgb', hov = null;
     const size = () => (src === 'pic' ? N : 8), cell = () => (src === 'pic' ? CELL : 40);
     const val = (r, c, k) => (src === 'pic' ? pic[r * N + c][k] : digit[r * 8 + c]);
 
@@ -92,60 +93,13 @@
   })();
 
   /* =================================================================
-     2. LAYER TYPES
-     ================================================================= */
-  (function layers() {
-    const root = document.getElementById('w-layers'); if (!root) return;
-    const T = {
-      conv: { name: 'Convolutional layer', col: 'var(--enc)', soft: 'var(--enc-soft)',
-        what: 'Slides a set of small <b>filters</b> over its input; each filter produces one <b>feature map</b>. An activation (ReLU) follows.',
-        learn: '<b>Yes</b>: F × (k·k·C + 1) numbers (the filters)', choose: 'number of filters, kernel size, stride, padding',
-        icon: '<svg viewBox="0 0 110 70" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"><g stroke="#0d8f7f" fill="#dff3ef"><rect x="6" y="8" width="52" height="52"/></g><g stroke="#9bb" stroke-width=".6">' + [1, 2, 3, 4, 5].map((i) => `<line x1="${6 + i * 8.67}" y1="8" x2="${6 + i * 8.67}" y2="60"/><line x1="6" y1="${8 + i * 8.67}" x2="58" y2="${8 + i * 8.67}"/>`).join('') + '</g><rect x="23" y="25" width="26" height="26" fill="rgba(232,113,45,.35)" stroke="#e8712d" stroke-width="2"/><path d="M64 34 L80 34" stroke="#667180" stroke-width="2"/><path d="M76 29 L82 34 L76 39" fill="none" stroke="#667180" stroke-width="2"/><rect x="86" y="14" width="20" height="20" fill="#fdeadd" stroke="#e8712d"/><rect x="90" y="20" width="20" height="20" fill="#fdeadd" stroke="#e8712d" opacity=".7" transform="translate(-4 8)"/></svg>' },
-      pool: { name: 'Pooling layer', col: '#2b7fa6', soft: '#d8ecf5',
-        what: 'Summarises each small window (usually its <b>maximum</b>) → smaller maps, a little tolerance to shifts. Works on every map separately.',
-        learn: '<b>No</b> parameters', choose: 'window size, stride',
-        icon: '<svg viewBox="0 0 110 70" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"><g stroke="#2b7fa6" fill="#d8ecf5"><rect x="6" y="8" width="52" height="52"/></g><g stroke="#2b7fa6" stroke-width="1.6" fill="none"><line x1="32" y1="8" x2="32" y2="60"/><line x1="6" y1="34" x2="58" y2="34"/></g><g font-size="9" font-weight="700" fill="#17202c" text-anchor="middle"><text x="19" y="25">1</text><text x="45" y="25">7</text><text x="19" y="51">3</text><text x="45" y="51">2</text></g><path d="M64 34 L80 34" stroke="#667180" stroke-width="2"/><path d="M76 29 L82 34 L76 39" fill="none" stroke="#667180" stroke-width="2"/><rect x="86" y="22" width="22" height="22" fill="#d8ecf5" stroke="#2b7fa6"/><text x="97" y="38" font-size="10" font-weight="800" text-anchor="middle" fill="#17202c">7</text></svg>' },
-      dense: { name: 'Fully connected (dense) layer', col: 'var(--accent)', soft: 'var(--accent-soft)',
-        what: 'After <b>flattening</b> the maps into a vector, every unit sees every feature — the MLP layer from Class 5. The last one outputs the class scores (softmax).',
-        learn: '<b>Yes</b>: inputs × units + units', choose: 'number of units',
-        icon: '<svg viewBox="0 0 110 70" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"><g stroke="#8a93a3" stroke-width=".9">' + [14, 30, 46, 58].map((y) => [18, 34, 50].map((y2) => `<line x1="22" y1="${y}" x2="88" y2="${y2 + 3}"/>`).join('')).join('') + '</g><g fill="#fff" stroke="#2859e0" stroke-width="2">' + [14, 30, 46, 58].map((y) => `<circle cx="22" cy="${y}" r="5"/>`).join('') + [21, 37, 53].map((y) => `<circle cx="88" cy="${y}" r="5"/>`).join('') + '</g></svg>' },
-    };
-    const NET = [['Input', 'in', ''], ['Conv', 'conv', 'conv'], ['ReLU', 'relu', 'conv'], ['Pool', 'pool', 'pool'], ['Conv', 'conv', 'conv'], ['ReLU', 'relu', 'conv'], ['Pool', 'pool', 'pool'], ['Flatten', 'flat', 'dense'], ['Dense', 'dense', 'dense'], ['Softmax', 'out', 'dense']];
-    root.innerHTML = `
-      <div class="grid g3" id="ly-cards">${Object.keys(T).map((k) => `
-        <div class="card" data-k="${k}" style="border-top:4px solid ${T[k].col};cursor:pointer">
-          <div style="height:4.2rem;margin-bottom:.5rem;overflow:hidden">${T[k].icon}</div>
-          <h3>${T[k].name}</h3>
-          <p class="small" style="color:var(--ink-2);margin:.2rem 0 .5rem">${T[k].what}</p>
-          <div class="tiny"><b>Learnable?</b> ${T[k].learn}</div>
-          <div class="tiny"><b>You choose:</b> ${T[k].choose}</div>
-        </div>`).join('')}</div>
-      <div class="tiny mt" style="font-weight:800;letter-spacing:.06em">AN EXAMPLE CNN — click a layer type to see where it appears</div>
-      <div class="pipe" id="ly-net" style="padding-top:.3rem"></div>`;
-    const net = root.querySelector('#ly-net'); let sel = null;
-    function draw() {
-      net.innerHTML = '';
-      NET.forEach(([label, cls, grp], i) => {
-        const e = document.createElement('div'); e.className = 'blk ' + cls; e.textContent = label;
-        e.style.opacity = sel && grp !== sel ? .28 : 1; e.style.minWidth = '4rem';
-        if (sel && grp === sel) e.style.borderColor = T[sel].col;
-        net.appendChild(e);
-        if (i < NET.length - 1) { const a = document.createElement('div'); a.className = 'arrow'; a.textContent = '›'; net.appendChild(a); }
-      });
-      root.querySelectorAll('#ly-cards .card').forEach((c) => { c.style.background = sel === c.dataset.k ? T[c.dataset.k].soft : ''; });
-    }
-    root.querySelectorAll('#ly-cards .card').forEach((c) => c.addEventListener('click', () => { sel = sel === c.dataset.k ? null : c.dataset.k; draw(); }));
-    draw();
-  })();
-
-  /* =================================================================
      3. BREAK COUNTDOWN
      ================================================================= */
   (function brk() {
     const root = document.getElementById('w-break'); if (!root) return;
-    root.innerHTML = `<div id="bk-t" style="font-size:7rem;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1">10:00</div>
+    root.innerHTML = `<div id="bk-t" style="font-size:7rem;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1">08:00</div>
       <div class="row mt" style="justify-content:center;gap:.5rem"><button class="btn primary" id="bk-go">▶ Start</button><button class="btn" id="bk-reset">Reset</button><span class="spacer" style="flex:0 0 1rem"></span><button class="btn small" id="bk-m">− 1 min</button><button class="btn small" id="bk-p">+ 1 min</button></div>`;
-    const $ = (s) => root.querySelector(s); let total = 600, left = 600, timer = null;
+    const $ = (s) => root.querySelector(s); let total = 480, left = 480, timer = null;
     const fmt = (s) => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
     function draw() { $('#bk-t').textContent = left > 0 ? fmt(left) : 'Time’s up'; $('#bk-t').style.color = left === 0 ? 'var(--gen)' : ''; $('#bk-go').textContent = timer ? '❚❚ Pause' : (left === 0 ? '▶ Restart' : '▶ Start'); }
     function stop() { clearInterval(timer); timer = null; }
@@ -154,5 +108,52 @@
     $('#bk-p').addEventListener('click', () => { total += 60; left += 60; draw(); });
     $('#bk-m').addEventListener('click', () => { total = Math.max(60, total - 60); left = Math.max(0, left - 60); draw(); });
     draw();
+  })();
+
+  /* =================================================================
+     4. POOLING: max / mean, and stability to small shifts
+     ================================================================= */
+  (function pooling() {
+    const root = document.getElementById('w-pool'); if (!root) return;
+    const IN = 14, OUT = 12, P = 6, CS = 15;
+    const SEVEN = ['..............', '..............', '..##########..', '..##########..', '.........##...', '........##....', '.......##.....', '......##......', '.....##.......', '.....##.......', '....##........', '....##........', '..............', '..............'];
+    const base = new Float32Array(IN * IN); SEVEN.forEach((row, r) => [...row].forEach((ch, c) => { base[r * IN + c] = ch === '#' ? 1 : 0; }));
+    const K = [-1, 0, 1, -2, 0, 2, -1, 0, 1];
+    let type = 'max', dx = 1;
+    root.innerHTML = `
+      <div class="row" style="margin-bottom:.6rem;gap:.8rem">
+        <label class="ctl" style="margin:0">Pooling<div class="seg" id="pl-type"><button data-t="max" class="on">Max</button><button data-t="mean">Mean</button></div></label>
+        <label class="ctl" style="margin:0">Move the digit by<div class="seg" id="pl-dx"><button data-d="0">0 px</button><button data-d="1" class="on">1 px →</button><button data-d="2">2 px →</button></div></label>
+        <span class="small">Window 2×2, stride 2 · filter: vertical edges + ReLU</span>
+      </div>
+      <div class="row top" style="gap:1.6rem;align-items:flex-start">
+        <div><div class="tiny" style="font-weight:800;margin-bottom:.2rem">ORIGINAL IMAGE</div><canvas id="pl-i0" class="cv"></canvas></div>
+        <div><div class="tiny" style="font-weight:800;margin-bottom:.2rem">FEATURE MAP</div><canvas id="pl-f0" class="cv"></canvas></div>
+        <div><div class="tiny" style="font-weight:800;margin-bottom:.2rem">AFTER POOLING</div><canvas id="pl-p0" class="cv"></canvas></div>
+        <div class="stat hot" style="min-width:10rem;align-self:center"><div class="l">feature map still matches the original by</div><div class="n" id="pl-df">–</div><div class="l mt">pooled map still matches the original by</div><div class="n" id="pl-dp" style="color:var(--enc)">–</div></div>
+      </div>
+      <div class="row top mt" style="gap:1.6rem;align-items:flex-start">
+        <div><div class="tiny" style="font-weight:800;margin-bottom:.2rem">SHIFTED IMAGE</div><canvas id="pl-i1" class="cv"></canvas></div>
+        <div><div class="tiny" style="font-weight:800;margin-bottom:.2rem">FEATURE MAP</div><canvas id="pl-f1" class="cv"></canvas></div>
+        <div><div class="tiny" style="font-weight:800;margin-bottom:.2rem">AFTER POOLING</div><canvas id="pl-p1" class="cv"></canvas></div>
+        <div class="tiny" style="align-self:center;max-width:15rem">The map is 12×12 before pooling and 6×6 after: <b>4× fewer numbers</b> to process.</div>
+      </div>`;
+    const $ = (q) => root.querySelector(q);
+    const shift = (img, d) => { const o = new Float32Array(IN * IN); for (let r = 0; r < IN; r++) for (let c = 0; c < IN; c++) { const sc = c - d; o[r * IN + c] = sc >= 0 && sc < IN ? img[r * IN + sc] : 0; } return o; };
+    function fmap(img) { const o = new Float32Array(OUT * OUT); for (let r = 0; r < OUT; r++) for (let c = 0; c < OUT; c++) { let s = 0; for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) s += img[(r + i) * IN + c + j] * K[i * 3 + j]; o[r * OUT + c] = Math.max(0, s); } return o; }
+    function pool(m) { const o = new Float32Array(P * P); for (let r = 0; r < P; r++) for (let c = 0; c < P; c++) { const v = [m[2 * r * OUT + 2 * c], m[2 * r * OUT + 2 * c + 1], m[(2 * r + 1) * OUT + 2 * c], m[(2 * r + 1) * OUT + 2 * c + 1]]; o[r * P + c] = type === 'max' ? Math.max(...v) : (v[0] + v[1] + v[2] + v[3]) / 4; } return o; }
+    const diff = (a, b) => { let ab = 0, aa = 0, bb = 0; for (let i = 0; i < a.length; i++) { ab += a[i] * b[i]; aa += a[i] * a[i]; bb += b[i] * b[i]; } return aa && bb ? ab / Math.sqrt(aa * bb) : 0; };   // cosine similarity: 1 = identical maps
+    function paint(cv, data, n, cs, scale, grey) { const ctx = U.fit(cv, n * cs, n * cs); for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) { ctx.fillStyle = grey ? U.ink(data[r * n + c]) : U.div(data[r * n + c] / scale); ctx.fillRect(c * cs, r * cs, cs + .4, cs + .4); } ctx.strokeStyle = 'rgba(23,32,44,.08)'; for (let i = 1; i < n; i++) { ctx.beginPath(); ctx.moveTo(i * cs + .5, 0); ctx.lineTo(i * cs + .5, n * cs); ctx.moveTo(0, i * cs + .5); ctx.lineTo(n * cs, i * cs + .5); ctx.stroke(); } }
+    function draw() {
+      const i0 = base, i1 = shift(base, dx), f0 = fmap(i0), f1 = fmap(i1), p0 = pool(f0), p1 = pool(f1), sc = Math.max(1e-6, ...f0, ...f1);
+      paint($('#pl-i0'), i0, IN, CS, 1, true); paint($('#pl-i1'), i1, IN, CS, 1, true);
+      paint($('#pl-f0'), f0, OUT, CS, sc); paint($('#pl-f1'), f1, OUT, CS, sc);
+      paint($('#pl-p0'), p0, P, CS * 2, sc); paint($('#pl-p1'), p1, P, CS * 2, sc);
+      $('#pl-df').textContent = Math.round(diff(f0, f1) * 100) + '%'; $('#pl-dp').textContent = Math.round(diff(p0, p1) * 100) + '%';
+    }
+    root.querySelectorAll('#pl-type button').forEach((b) => b.addEventListener('click', () => { root.querySelectorAll('#pl-type button').forEach((x) => x.classList.remove('on')); b.classList.add('on'); type = b.dataset.t; draw(); }));
+    root.querySelectorAll('#pl-dx button').forEach((b) => b.addEventListener('click', () => { root.querySelectorAll('#pl-dx button').forEach((x) => x.classList.remove('on')); b.classList.add('on'); dx = +b.dataset.d; draw(); }));
+    window.__POOL = { draw, test(t, d) { type = t; dx = d; const f0 = fmap(base), f1 = fmap(shift(base, d)); return { fm: diff(f0, f1), pooled: diff(pool(f0), pool(f1)) }; } };
+    Deck.on('pooling', draw);
   })();
 })();

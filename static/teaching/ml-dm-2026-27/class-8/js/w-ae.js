@@ -65,7 +65,7 @@
     <div class="grid g2" style="align-items:start">
       <div class="card flat">
         <div class="row" style="gap:.6rem">
-          <label class="ctl" style="margin:0"><span>Bottleneck size <i>k</i> (numbers in the code)</span>
+          <label class="ctl" style="margin:0"><span>Latent vector size <i>k</i> (numbers in it)</span>
             <div class="seg" id="ae-k">${KS.map((k, i) => `<button data-k="${k}" class="${i === 0 ? 'on' : ''}">${k}</button>`).join('')}</div></label>
           <span class="spacer"></span>
           <button class="btn primary" id="ae-train">▶ Train</button>
@@ -80,7 +80,7 @@
         <div class="mt"><canvas id="ae-curve" class="cv"></canvas><div class="tiny" style="margin-top:.15rem"><span style="color:#7a8aa3;font-weight:800">━</span> training error &nbsp;<span style="color:var(--gen);font-weight:800">━</span> test error &nbsp;<span style="color:#999">┅</span> average-digit baseline</div></div>
         <div class="mt">
           <canvas id="ae-rec" class="cv"></canvas>
-          <div class="row" style="margin-top:.2rem"><span class="tiny" style="flex:1">Top: original (never trained on). Bottom: what the autoencoder rebuilds from its <b id="ae-kk">2</b>-number code.</span><button class="btn small" id="ae-new">New examples</button></div>
+          <div class="row" style="margin-top:.2rem"><span class="tiny" style="flex:1">Top: original (never trained on). Bottom: what the autoencoder rebuilds from its <b id="ae-kk">2</b>-number latent vector.</span><button class="btn small" id="ae-new">New examples</button></div>
         </div>
       </div>
 
@@ -95,7 +95,7 @@
               <div class="tiny" id="ae-xy" style="margin-top:.2rem"></div>
             </div>
           </div>
-          <div class="verdict mt" id="ae-verd">Hover over the map: each dot is one digit, squeezed into the code. The decoder turns any point back into an image.</div>
+          <div class="verdict mt" id="ae-verd">Hover over the map: each dot is one digit, squeezed into the latent vector. The decoder turns any point back into an image.</div>
           <div class="tiny mt" id="ae-note"></div>
         </div>
         <div id="ae-draw" style="display:none">
@@ -108,7 +108,7 @@
           <div class="verdict mt" id="ae-dr-verd"></div>
         </div>
         <div id="ae-bars" style="display:none">
-          <div class="small" style="margin-bottom:.8rem">Train each bottleneck size for a while, then compare. <b>Smaller code → more compression → higher error.</b></div>
+          <div class="small" style="margin-bottom:.8rem">Train each bottleneck size for a while, then compare. <b>Smaller latent vector → more compression → higher error.</b></div>
           <div class="mini-bars" id="ae-barsrow"></div><div class="mini-bars-x">${KS.map((k) => `<div>k = ${k}</div>`).join('')}</div>
           <div class="tiny mt">Reference: the “average digit” baseline is ${BASE.toFixed(3)}. Each bar is the current test error of that model.</div>
         </div>
@@ -190,7 +190,7 @@
     for (let i = 0; i < D.n; i++) { ctx.fillStyle = PAL[D.y[i]]; ctx.globalAlpha = .72; ctx.beginPath(); ctx.arc(X(proj.P[i * 2]), Y(proj.P[i * 2 + 1]), 3.1, 0, 6.3); ctx.fill(); }
     ctx.globalAlpha = 1;
     if (hoverPt) { const x = X(hoverPt.x), y = Y(hoverPt.y); ctx.strokeStyle = '#17202c'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, 7, 0, 6.3); ctx.moveTo(x - 11, y); ctx.lineTo(x + 11, y); ctx.moveTo(x, y - 11); ctx.lineTo(x, y + 11); ctx.stroke(); }
-    ctx.fillStyle = '#667180'; ctx.font = '700 10px system-ui'; ctx.textAlign = 'left'; ctx.fillText(k === 2 ? 'latent dimension 2 ↑' : '2-D view of a ' + k + '-D code ↑', 6, 12); ctx.textAlign = 'right'; ctx.fillText(k === 2 ? 'latent dimension 1 →' : 'main direction →', S - 6, S - 6);
+    ctx.fillStyle = '#667180'; ctx.font = '700 10px system-ui'; ctx.textAlign = 'left'; ctx.fillText(k === 2 ? 'latent dimension 2 ↑' : '2-D view of a ' + k + '-D latent vector ↑', 6, 12); ctx.textAlign = 'right'; ctx.fillText(k === 2 ? 'latent dimension 1 →' : 'main direction →', S - 6, S - 6);
     cv._S = S;
     const dc = $('#ae-dec'), dctx = U.fit(dc, 96, 96);
     if (hoverPt) { const o = decodeAt(hoverPt.x, hoverPt.y); U.drawGrid(dctx, o, 8, 0, 0, 12); }
@@ -198,8 +198,8 @@
   }
   function updateVerdict() {
     const el = $('#ae-verd');
-    if (!M().epoch) { el.className = 'verdict'; el.textContent = 'Untrained: the code is random. Train for a few epochs, then explore.'; return; }
-    if (!hoverPt) { el.className = 'verdict'; el.textContent = 'Hover over the map: each dot is one digit squeezed into the code (colour = true digit, which the model never saw). The decoder turns any point back into an image.'; $('#ae-xy').textContent = ''; return; }
+    if (!M().epoch) { el.className = 'verdict'; el.textContent = 'Untrained: the latent vector is random. Train for a few epochs, then explore.'; return; }
+    if (!hoverPt) { el.className = 'verdict'; el.textContent = 'Hover over the map: each dot is one digit squeezed into the latent vector (colour = true digit, which the model never saw). The decoder turns any point back into an image.'; $('#ae-xy').textContent = ''; return; }
     let best = 1e9; for (let i = 0; i < D.n; i++) best = Math.min(best, Math.hypot(proj.P[i * 2] - hoverPt.x, proj.P[i * 2 + 1] - hoverPt.y));
     $('#ae-xy').textContent = '(' + hoverPt.x.toFixed(2) + ', ' + hoverPt.y.toFixed(2) + ')';
     if (best > 2.6 * proj.nn) { el.className = 'verdict warn'; el.innerHTML = '⚠ <b>A hole.</b> No real digit was encoded anywhere near here, so the decoder is guessing. <b>Rebuilding ≠ generating</b>: nothing guarantees that arbitrary codes give realistic images.'; }
@@ -226,7 +226,7 @@
     $('#ae-ep').textContent = m.epoch; $('#ae-te').textContent = m.testErr == null ? '–' : m.testErr.toFixed(4);
     drawCurve(); drawRec(); computeLatent(); drawScatter(); updateVerdict(); drawBars(); if (tab === 'draw') drawDraw();
     $('#ae-train').textContent = training ? '❚❚ Pause' : (m.epoch >= MAXEP ? 'Max epochs' : '▶ Train'); $('#ae-train').disabled = m.epoch >= MAXEP && !training;
-    $('#ae-note').textContent = k > 2 ? 'With k = ' + k + ' the code has ' + k + ' numbers; the map shows its two most informative directions, so points can look more overlapped than they really are.' : 'With k = 2 the whole code fits on a plane — that is why we can draw it directly.';
+    $('#ae-note').textContent = k > 2 ? 'With k = ' + k + ' the latent vector has ' + k + ' numbers; the map shows its two most informative directions, so points can look more overlapped than they really are.' : 'With k = 2 the whole latent vector fits on a plane — that is why we can draw it directly.';
   }
 
   /* ---------- training loop ---------- */
@@ -283,5 +283,52 @@
 
   $('#ae-leg').innerHTML = PAL.map((c, i) => `<span><i style="background:${c}"></i>${i}</span>`).join('');
   Deck.on('aelab', (s, resized) => { if (!resized) { training = false; } refresh(); });
+
+  /* ---------------- PCA baseline (for the "autoencoder vs PCA" slide) ---------------- */
+  (function pcaWidget() {
+    const rootP = document.getElementById('w-pca'); if (!rootP) return;
+    const n = NTRAIN, C = new Float64Array(64 * 64);
+    for (let i = 0; i < n; i++) for (let a = 0; a < 64; a++) { const da = Xtr[i * 64 + a] - mean[a]; for (let b = 0; b < 64; b++) C[a * 64 + b] += da * (Xtr[i * 64 + b] - mean[b]) / n; }
+    const comps = [], Cc = Float64Array.from(C);
+    for (let c = 0; c < 16; c++) {
+      let v = new Float64Array(64).map((_, j) => Math.sin(j * 1.3 + c + 1));
+      for (let it = 0; it < 120; it++) { const w = new Float64Array(64); for (let a = 0; a < 64; a++) { let t = 0; for (let b = 0; b < 64; b++) t += Cc[a * 64 + b] * v[b]; w[a] = t; } const nr = Math.hypot(...w) || 1; v = w.map((x) => x / nr); }
+      let lam = 0; for (let a = 0; a < 64; a++) { let t = 0; for (let b = 0; b < 64; b++) t += Cc[a * 64 + b] * v[b]; lam += t * v[a]; }
+      for (let a = 0; a < 64; a++) for (let b = 0; b < 64; b++) Cc[a * 64 + b] -= lam * v[a] * v[b];
+      comps.push(v);
+    }
+    function recon(x, k) { const o = Float64Array.from(mean); for (let j = 0; j < k; j++) { let p = 0; for (let a = 0; a < 64; a++) p += (x[a] - mean[a]) * comps[j][a]; for (let a = 0; a < 64; a++) o[a] += p * comps[j][a]; } return o; }
+    const err = []; for (let k = 1; k <= 16; k++) { let e = 0; for (let i = 0; i < NTE; i++) { const x = Xte.subarray(i * 64, i * 64 + 64), r = recon(x, k); for (let a = 0; a < 64; a++) e += (r[a] - x[a]) ** 2; } err[k] = e / (NTE * 64); }
+    rootP.innerHTML = `
+      <div class="grid g-side" style="align-items:start">
+        <div>
+          <label class="ctl" style="max-width:28rem"><span>Number of values kept in the latent vector: <span class="val" id="pc2-k">2</span></span><input type="range" id="pc2-s" min="1" max="16" value="2"></label>
+          <div class="mt"><canvas id="pc2-rec" class="cv"></canvas><div class="tiny" style="margin-top:.2rem">Top: original digits. Bottom: rebuilt by <b>PCA</b> from the same number of values.</div></div>
+        </div>
+        <div>
+          <canvas id="pc2-ch" class="cv"></canvas>
+          <div class="tiny" style="margin-top:.2rem"><span style="color:#2859e0;font-weight:800">●</span> PCA test error · <span style="color:var(--gen);font-weight:800">●</span> the autoencoder you trained (only for k you trained on the previous slide)</div>
+          <div class="callout mt" id="pc2-msg" style="font-size:.9rem"></div>
+        </div>
+      </div>`;
+    const q = (x) => rootP.querySelector(x);
+    function draw() {
+      const k = +q('#pc2-s').value; q('#pc2-k').textContent = k;
+      const px = 6, gap = 6, w = 8 * (8 * px + gap) - gap, ctx = U.fit(q('#pc2-rec'), w, 2 * 8 * px + 8); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, 2 * 8 * px + 8);
+      for (let i = 0; i < 8; i++) { const x = Xte.subarray(i * 64, i * 64 + 64), r = recon(x, k).map((v) => U.clamp(v, 0, 1)); U.drawGrid(ctx, x, 8, i * (8 * px + gap), 0, px); U.drawGrid(ctx, r, 8, i * (8 * px + gap), 8 * px + 8, px); }
+      const W = Math.min(rootP.clientWidth * 0.42, 420), H = 190, c2 = U.fit(q('#pc2-ch'), W, H); c2.fillStyle = '#fff'; c2.fillRect(0, 0, W, H);
+      const X = (kk) => 36 + ((kk - 1) / 15) * (W - 50), ymax = 0.075, Y = (v) => H - 24 - (U.clamp(v, 0, ymax) / ymax) * (H - 36);
+      c2.strokeStyle = '#2859e0'; c2.lineWidth = 2.5; c2.beginPath(); for (let kk = 1; kk <= 16; kk++) { kk === 1 ? c2.moveTo(X(kk), Y(err[kk])) : c2.lineTo(X(kk), Y(err[kk])); } c2.stroke();
+      c2.fillStyle = '#2859e0'; for (let kk = 1; kk <= 16; kk++) { c2.beginPath(); c2.arc(X(kk), Y(err[kk]), kk === k ? 6 : 3, 0, 6.3); c2.fill(); }
+      c2.fillStyle = '#e8712d'; KS.forEach((kk) => { const e = models[kk].testErr; if (e != null) { c2.beginPath(); c2.arc(X(kk), Y(e), 6, 0, 6.3); c2.fill(); } });
+      c2.fillStyle = '#667180'; c2.font = '600 10px system-ui'; c2.textAlign = 'center'; c2.fillText('latent size k →', W / 2, H - 1); c2.textAlign = 'right'; c2.fillText('test error', 30, 12);
+      [1, 4, 8, 12, 16].forEach((kk) => { c2.textAlign = 'center'; c2.fillText(kk, X(kk), H - 13); });
+      const ae = KS.includes(k) && models[k].testErr != null ? models[k].testErr : null;
+      q('#pc2-msg').innerHTML = 'PCA with k = ' + k + ': test error <b>' + err[k].toFixed(4) + '</b>. ' + (ae != null ? 'Your autoencoder with k = ' + k + ': <b>' + ae.toFixed(4) + '</b>' + (ae < err[k] ? ' — lower: the non-linear layers capture more.' : ' — similar or higher: a linear autoencoder would match PCA; more training or non-linearity helps.') : 'Train the autoencoder lab (k = 2, 4, 8, 16) to see its points here.');
+    }
+    q('#pc2-s').addEventListener('input', draw);
+    Deck.on('pca', draw);
+  })();
+
   window.__AE = { models, AE };   // handy for the browser console when debugging
 })();
