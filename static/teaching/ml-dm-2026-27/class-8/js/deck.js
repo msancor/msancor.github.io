@@ -3,17 +3,17 @@
 (function () {
   'use strict';
 
-  // Planned minutes per section: 2 + 5 + 6 + 45 = 58 min before the 8-min break, then 25 + 17 + 4 = 46 min: 112 min in total.
-  // Slides marked "optional" in the teaching guide (about 16 min) can be skipped to fit a 90-minute slot.
+  // Planned minutes per section: 2 + 5 + 6 + 42 = 55 min before the 8-minute break, then 21 + 16 + 3 = 40 min: 103 min in total.
+  // The slides marked "optional" in the teaching guide (about 14 min) can be skipped to fit a 90-minute slot.
   const SECTIONS = [
     { id: 'start', label: 'Plan',                    min: 2 },
     { id: 'mlp',   label: 'MLP recap',               min: 5 },
     { id: 'why',   label: 'Why CNNs',                min: 6 },
-    { id: 'cnn',   label: 'How CNNs work',           min: 45 },
+    { id: 'cnn',   label: 'How CNNs work',           min: 42 },
     { id: 'break', label: 'Break',                   min: 8 },
-    { id: 'rep',   label: 'Representation learning', min: 25 },
-    { id: 'gan',   label: 'GANs',                    min: 17 },
-    { id: 'wrap',  label: 'Wrap-up',                 min: 4 },
+    { id: 'rep',   label: 'Representation learning', min: 21 },
+    { id: 'gan',   label: 'GANs',                    min: 16 },
+    { id: 'wrap',  label: 'Wrap-up',                 min: 3 },
   ];
 
   const $ = (s, r) => (r || document).querySelector(s);

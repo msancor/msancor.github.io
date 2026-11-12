@@ -2,20 +2,14 @@
    1. kernel   : "what is a convolution" — a worked patch × kernel example with designed vs learned kernels (slide "convdef")
    2. poolnum  : pooling / strided convolution animated on a grid of numbers                              (slide "pooling")
    3. hier     : what units of trained networks respond to, with real images                              (slide "hier")
-   4. dropout  : randomly switch units off during training                                                (slide "dropout") */
+   5. photo    : the same kernels applied to a real photograph                                           (slide "filter")
+   6. arch     : a real forward pass through a small trained CNN                                          (slide "arch") */
 (function () {
   'use strict';
 
-  /* Filters learned by a small CNN (conv 6 filters 3x3 -> ReLU -> dense 10) trained for 40 epochs on 800 of the
-     1,000 digits (own numpy implementation, 97 % accuracy on the other 200). Exported once, embedded here. */
-  const LEARNED = [
-    [1.37, -0.06, -0.11, 0.47, -0.27, 0.09, -1.5, -0.51, 0.55],
-    [-1.5, -0.71, -0.29, 0.09, 0.56, 0.23, 1.18, 0.4, 0.66],
-    [0.77, 0.27, -0.79, 0.07, 1.56, 0.43, -1.08, 0.44, 0.42],
-    [0.21, 2.22, 0.32, 0.63, 0.75, 0.13, -0.75, -0.17, -0.55],
-    [-0.02, -0.42, -0.1, 0.18, 0.07, 0.26, 0.19, 1.29, 0.65],
-    [0.04, -0.34, -0.15, -0.27, 0.82, 0.55, 0.62, 1.16, 0.3],
-  ];
+  /* Filters learned by a small CNN (conv 6 filters 3x3 -> ReLU -> max-pool -> dense 10) trained for this class on 800 of the 1,000 digits
+     (own numpy implementation, 97 % accuracy on the other 200). Weights: data/cnn.js. */
+  const LEARNED = window.CNN_MODEL.conv;
   window.LEARNED_FILTERS = LEARNED;
 
   /* =================================================================
@@ -26,7 +20,7 @@
     const D = U.digits();
     const SOBEL = [-1, 0, 1, -2, 0, 2, -1, 0, 1];
     let di = 7, r0 = 3, c0 = 2, which = 'designed';
-    const kers = () => (which === 'designed' ? SOBEL : LEARNED[3]);
+    const kers = () => (which === 'designed' ? SOBEL : LEARNED[1]);
     root.innerHTML = `
       <div class="row" style="margin-bottom:.5rem;gap:.7rem">
         <div class="seg" id="kn-w"><button data-w="designed" class="on">Kernel designed by hand (Sobel)</button><button data-w="learned">Kernel learned by a CNN</button></div>
@@ -127,6 +121,17 @@
     Deck.on('pooling', () => { stop(); setStep(0); });
   })();
 
+  /* tabs on the filter slide: real photograph / draw your own */
+  (function filtTabs() {
+    const bar = document.getElementById('filt-tabs'); if (!bar) return;
+    const a = document.getElementById('w-photo'), b = document.getElementById('w-conv');
+    bar.querySelectorAll('button').forEach((btn) => btn.addEventListener('click', () => {
+      bar.querySelectorAll('button').forEach((x) => x.classList.remove('on')); btn.classList.add('on');
+      const p = btn.dataset.t === 'photo'; a.style.display = p ? '' : 'none'; b.style.display = p ? 'none' : '';
+      window.dispatchEvent(new Event('resize'));
+    }));
+  })();
+
   /* tabs on the pooling slide: numbers / stability on the digit */
   (function tabs() {
     const bar = document.getElementById('pool-tabs'); if (!bar) return;
@@ -162,44 +167,88 @@
   })();
 
   /* =================================================================
-     4. DROPOUT
+     5. THE SAME KERNELS ON A REAL PHOTOGRAPH
      ================================================================= */
-  (function dropout() {
-    const root = document.getElementById('w-drop'); if (!root) return;
-    const L = [4, 6, 6, 2], W = 620, H = 300, X = [60, 220, 380, 540];
-    const pos = L.map((n, l) => Array.from({ length: n }, (_, i) => ({ x: X[l], y: 30 + (H - 60) * (n === 1 ? .5 : i / (n - 1)) })));
-    let p = 0.5, mask = null, steps = 0, test = false, timer = null, rnd = U.mulberry32(11);
-    root.innerHTML = `
-      <div class="row" style="margin-bottom:.5rem;gap:.9rem">
-        <label class="ctl" style="margin:0;min-width:11rem">Dropout probability p <span class="val" id="dp-pv">0.5</span><input type="range" id="dp-p" min="0" max="0.8" step="0.1" value="0.5"></label>
-        <button class="btn primary" id="dp-step">New training step</button><button class="btn" id="dp-auto">▶ Auto</button><button class="btn" id="dp-test">At test time</button>
-      </div>
-      <div class="grid g-side" style="align-items:center">
-        <div class="card flat" style="padding:.4rem"><svg id="dp-svg" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" role="img" aria-label="A small neural network in which some hidden units are switched off at random at every training step"></svg></div>
-        <div>
-          <div class="stat"><div class="n" id="dp-n" style="font-size:1.3rem">–</div><div class="l">hidden units active in this step</div></div>
-          <div class="stat mt"><div class="n" id="dp-s" style="font-size:1.3rem">–</div><div class="l">different sub-networks possible (2<sup>12</sup> hidden units)</div></div>
-          <div class="callout mt" id="dp-msg" style="font-size:.95rem"></div>
-        </div>
-      </div>`;
-    const $ = (s) => root.querySelector(s), svg = $('#dp-svg');
-    function newMask() { mask = L.map((n, l) => Array.from({ length: n }, () => (l === 0 || l === L.length - 1) ? true : rnd() >= p)); steps++; }
-    function draw() {
-      const on = (l, i) => test || (mask ? mask[l][i] : true);
-      let s = '';
-      for (let l = 0; l < L.length - 1; l++) for (let i = 0; i < L[l]; i++) for (let j = 0; j < L[l + 1]; j++) { const act = on(l, i) && on(l + 1, j); s += `<line x1="${pos[l][i].x}" y1="${pos[l][i].y}" x2="${pos[l + 1][j].x}" y2="${pos[l + 1][j].y}" stroke="${act ? '#8a93a3' : '#e2dfd5'}" stroke-width="${act ? 1.3 : .8}" ${act ? '' : 'stroke-dasharray="3 4"'}/>`; }
-      pos.forEach((col, l) => col.forEach((q, i) => { const a = on(l, i), hid = l > 0 && l < L.length - 1; s += `<circle cx="${q.x}" cy="${q.y}" r="14" fill="${a ? (hid ? '#dff3ef' : '#e6edfd') : '#f3f1ea'}" stroke="${a ? (hid ? '#0d8f7f' : '#2859e0') : '#cfcabb'}" stroke-width="${a ? 2.5 : 1.5}" ${a ? '' : 'stroke-dasharray="3 3"'}/>${a ? '' : `<path d="M${q.x - 6} ${q.y - 6} L${q.x + 6} ${q.y + 6} M${q.x + 6} ${q.y - 6} L${q.x - 6} ${q.y + 6}" stroke="#c0392b" stroke-width="2.5"/>`}`; }));
-      ['input', 'hidden 1', 'hidden 2', 'output'].forEach((t, l) => { s += `<text x="${X[l]}" y="14" text-anchor="middle" font-size="11" font-weight="800" fill="#667180">${t.toUpperCase()}</text>`; });
-      svg.innerHTML = s;
-      const hid = (mask && !test) ? mask[1].concat(mask[2]).filter(Boolean).length : 12;
-      $('#dp-n').textContent = hid + ' / 12'; $('#dp-s').textContent = '4,096';
-      $('#dp-msg').innerHTML = test ? '<b>At test time</b> every unit is used (its outgoing weights are scaled by 1 − p, so outputs keep the same size).' : (steps ? '<b>Training step ' + steps + '.</b> A different random subset is dropped each time, so no unit can rely on a specific partner being there.' : 'Press <b>New training step</b>.');
+  (function photo() {
+    const root = document.getElementById('w-photo'); if (!root) return;
+    const F = [
+      { n: 'Original', k: [0, 0, 0, 0, 1, 0, 0, 0, 0], m: 'direct', t: 'The photograph in greyscale: one grid of numbers.' },
+      { n: 'Vertical edges', k: [-1, 0, 1, -2, 0, 2, -1, 0, 1], m: 'abs', g: 1.1, t: 'Bright where brightness changes from left to right: the outlines of the body and the white chest patch.' },
+      { n: 'Horizontal edges', k: [-1, -2, -1, 0, 0, 0, 1, 2, 1], m: 'abs', g: 1.1, t: 'Bright where brightness changes from top to bottom: the ground line, the top of the head.' },
+      { n: 'Blur', k: Array(9).fill(1 / 9), m: 'direct', t: 'Averages the neighbourhood: removes fine detail, keeps the overall shape.' },
+      { n: 'Sharpen', k: [0, -1, 0, -1, 5, -1, 0, -1, 0], m: 'direct', t: 'Exaggerates differences with the neighbours: fine detail (fur, leaves) stands out.' },
+      { n: 'Outline', k: [-1, -1, -1, -1, 8, -1, -1, -1, -1], m: 'abs', g: 0.7, t: 'Responds to any change in any direction: a line drawing.' },
+    ];
+    root.innerHTML = `<div class="row top" style="gap:1.2rem;flex-wrap:wrap;align-items:flex-start">
+        <div><div class="tiny" style="font-weight:800">PHOTO</div><canvas id="ph-a" class="cv"></canvas></div>
+        <div style="font-size:2rem;font-weight:800;color:var(--muted);align-self:center">⊛</div>
+        <div><div class="tiny" style="font-weight:800">KERNEL</div><canvas id="ph-k" class="cv"></canvas></div>
+        <div style="font-size:2rem;font-weight:800;color:var(--muted);align-self:center">=</div>
+        <div><div class="tiny" style="font-weight:800">FEATURE MAP: <span id="ph-n"></span></div><canvas id="ph-b" class="cv"></canvas></div>
+        <div style="flex:1;min-width:13rem"><div class="seg" id="ph-s" style="flex-wrap:wrap;max-width:100%"></div><div class="callout mt" id="ph-t" style="font-size:.92rem"></div></div></div>`;
+    const $ = (s) => root.querySelector(s); let g = null, W = 0, H = 0, sel = 1, img = null;
+    const seg = $('#ph-s'); F.forEach((f, i) => { const b = document.createElement('button'); b.textContent = f.n; b.addEventListener('click', () => { sel = i; draw(); }); seg.appendChild(b); });
+    function load() {
+      img = new Image(); img.onload = () => {
+        const sc = 200 / Math.max(img.width, img.height); W = Math.round(img.width * sc); H = Math.round(img.height * sc);
+        const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d'); x.drawImage(img, 0, 0, W, H);
+        const d = x.getImageData(0, 0, W, H).data; g = new Float32Array(W * H);
+        for (let i = 0; i < W * H; i++) g[i] = (0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2]) / 255;
+        draw();
+      }; img.src = 'img/photos/dog.jpg';
     }
-    $('#dp-step').addEventListener('click', () => { test = false; newMask(); draw(); });
-    $('#dp-test').addEventListener('click', () => { test = true; stopAuto(); draw(); });
-    $('#dp-p').addEventListener('input', (e) => { p = +e.target.value; $('#dp-pv').textContent = p.toFixed(1); test = false; newMask(); draw(); });
-    function stopAuto() { clearInterval(timer); timer = null; $('#dp-auto').textContent = '▶ Auto'; }
-    $('#dp-auto').addEventListener('click', () => { if (timer) { stopAuto(); return; } test = false; $('#dp-auto').textContent = '❚❚ Stop'; timer = setInterval(() => { newMask(); draw(); }, 650); });
-    Deck.on('dropout', () => { stopAuto(); if (!mask) newMask(); test = false; draw(); });
+    function paintGray(cv, arr) { const ctx = U.fit(cv, W, H), id = ctx.createImageData(W, H); for (let i = 0; i < W * H; i++) { const v = Math.round(255 * U.clamp(arr[i], 0, 1)); id.data[i * 4] = id.data[i * 4 + 1] = id.data[i * 4 + 2] = v; id.data[i * 4 + 3] = 255; } const t = document.createElement('canvas'); t.width = W; t.height = H; t.getContext('2d').putImageData(id, 0, 0); ctx.drawImage(t, 0, 0, W, H); }
+    function draw() {
+      if (!g) return; const f = F[sel], out = new Float32Array(W * H);
+      for (let r = 1; r < H - 1; r++) for (let c = 1; c < W - 1; c++) { let s = 0; for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) s += g[(r + i - 1) * W + c + j - 1] * f.k[i * 3 + j]; out[r * W + c] = f.m === 'abs' ? Math.abs(s) * f.g : s; }
+      paintGray($('#ph-a'), g); paintGray($('#ph-b'), out);
+      const ks = 40, ctx = U.fit($('#ph-k'), 3 * ks, 3 * ks), m = Math.max(...f.k.map(Math.abs)), fm = (v) => (Math.abs(v - Math.round(v)) < .005 ? String(Math.round(v)) : v.toFixed(2));
+      for (let i = 0; i < 9; i++) { ctx.fillStyle = U.div(f.k[i] / m); ctx.fillRect((i % 3) * ks, Math.floor(i / 3) * ks, ks - 1, ks - 1); ctx.fillStyle = Math.abs(f.k[i] / m) > .6 ? '#fff' : '#17202c'; ctx.font = '700 12px ui-monospace,Menlo,monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(fm(f.k[i]), (i % 3) * ks + ks / 2, Math.floor(i / 3) * ks + ks / 2); }
+      $('#ph-n').textContent = f.n.toUpperCase(); $('#ph-t').textContent = f.t;
+      seg.querySelectorAll('button').forEach((b, i) => b.classList.toggle('on', i === sel));
+    }
+    load();
+  })();
+
+  /* =================================================================
+     6. A REAL FORWARD PASS THROUGH A SMALL TRAINED CNN
+     ================================================================= */
+  (function arch() {
+    const root = document.getElementById('w-arch'); if (!root) return;
+    const M = window.CNN_MODEL, D = U.digits(); let di = 7;
+    root.innerHTML = `<div class="row" style="margin-bottom:.5rem"><button class="btn small" id="ar-next">Another digit</button><span class="small" id="ar-res"></span></div>
+      <div class="ar">
+        <div class="ar-col"><canvas id="ar-in"></canvas><div class="ar-cap">Input<br><b>8×8×1</b></div></div>
+        <div class="ar-op"><div class="ar-box conv">Convolution<br>6 filters 3×3<br>+ ReLU</div></div>
+        <div class="ar-col"><canvas id="ar-fm"></canvas><div class="ar-cap">Feature maps<br><b>6×6×6</b></div></div>
+        <div class="ar-op"><div class="ar-box pool">Max-pool<br>2×2</div></div>
+        <div class="ar-col"><canvas id="ar-pl"></canvas><div class="ar-cap">Pooled maps<br><b>3×3×6</b></div></div>
+        <div class="ar-op"><div class="ar-box flat">Flatten</div></div>
+        <div class="ar-col"><canvas id="ar-fl"></canvas><div class="ar-cap">Feature vector<br><b>54</b></div></div>
+        <div class="ar-op"><div class="ar-box dense">Dense 10<br>+ softmax</div></div>
+        <div class="ar-col"><canvas id="ar-out"></canvas><div class="ar-cap">Class probabilities<br><b>10</b></div></div>
+      </div>
+      <div class="ar-brace"><div style="flex:5.2;border-color:var(--enc);color:var(--enc)">FEATURE EXTRACTOR: convolution + pooling</div><div style="flex:3;border-color:var(--accent);color:var(--accent)">CLASSIFIER: flatten + dense (as in an MLP)</div></div>`;
+    const $ = (s) => root.querySelector(s);
+    function forward(x) {
+      const maps = [], pooled = [];
+      for (let f = 0; f < 6; f++) { const k = M.conv[f], m = new Float32Array(36); for (let r = 0; r < 6; r++) for (let c = 0; c < 6; c++) { let s = M.cb[f]; for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) s += x[(r + i) * 8 + c + j] * k[i * 3 + j]; m[r * 6 + c] = Math.max(0, s); } maps.push(m);
+        const p = new Float32Array(9); for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) p[r * 3 + c] = Math.max(m[2 * r * 6 + 2 * c], m[2 * r * 6 + 2 * c + 1], m[(2 * r + 1) * 6 + 2 * c], m[(2 * r + 1) * 6 + 2 * c + 1]); pooled.push(p); }
+      const fl = new Float32Array(54); for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) for (let f = 0; f < 6; f++) fl[(r * 3 + c) * 6 + f] = pooled[f][r * 3 + c];
+      const z = M.db.map((b, o) => { let s = b; for (let i = 0; i < 54; i++) s += fl[i] * M.dense[o][i]; return s; }), mx = Math.max(...z), e = z.map((v) => Math.exp(v - mx)), t = e.reduce((a, b) => a + b, 0);
+      return { maps, pooled, fl, p: e.map((v) => v / t) };
+    }
+    function grid(cv, arr, n, cs, shape) { const g = 4, w = 3 * n * cs + 2 * g, h = 2 * n * cs + g, ctx = U.fit(cv, w, h); arr.forEach((m, i) => { const x0 = (i % 3) * (n * cs + g), y0 = Math.floor(i / 3) * (n * cs + g), mx = Math.max(1e-6, ...m); for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) { ctx.fillStyle = U.ink(m[r * n + c] / mx); ctx.fillRect(x0 + c * cs, y0 + r * cs, cs - .4, cs - .4); } ctx.strokeStyle = 'rgba(23,32,44,.3)'; ctx.strokeRect(x0 + .5, y0 + .5, n * cs - 1, n * cs - 1); }); }
+    function draw() {
+      const x = D.X.subarray(di * 64, di * 64 + 64), o = forward(x);
+      let ctx = U.fit($('#ar-in'), 96, 96); U.drawGrid(ctx, x, 8, 0, 0, 12); ctx.strokeStyle = 'rgba(23,32,44,.4)'; ctx.strokeRect(.5, .5, 95, 95);
+      grid($('#ar-fm'), o.maps, 6, 9); grid($('#ar-pl'), o.pooled, 3, 18);
+      ctx = U.fit($('#ar-fl'), 9 * 12, 6 * 12); const mx = Math.max(1e-6, ...o.fl); for (let i = 0; i < 54; i++) { ctx.fillStyle = U.ink(o.fl[i] / mx); ctx.fillRect((i % 9) * 12, Math.floor(i / 9) * 12, 11.3, 11.3); }
+      ctx = U.fit($('#ar-out'), 130, 10 * 17); const best = o.p.indexOf(Math.max(...o.p));
+      for (let k = 0; k < 10; k++) { ctx.fillStyle = k === best ? '#e8712d' : '#cfcabb'; ctx.fillRect(16, k * 17 + 2, Math.max(1, o.p[k] * 110), 13); ctx.fillStyle = '#17202c'; ctx.font = '700 11px system-ui'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(k, 2, k * 17 + 9); }
+      $('#ar-res').innerHTML = 'Real forward pass: the network predicts <b>' + best + '</b> (probability ' + o.p[best].toFixed(2) + '); true label: <b>' + D.y[di] + '</b>.';
+    }
+    $('#ar-next').addEventListener('click', () => { di = (di * 7 + 13) % D.n; draw(); });
+    Deck.on('arch', draw);
   })();
 })();

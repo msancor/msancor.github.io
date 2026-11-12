@@ -1,7 +1,7 @@
 /* A real, tiny GAN trained in the browser on the 8x8 handwritten digits (one class at a time).
    Generator: z (4 numbers) -> 24 tanh units -> 64 pixels (sigmoid).  Discriminator: 64 pixels -> 24 leaky-ReLU units -> 1 (sigmoid).
    Plain SGD-style training with Adam (lr 0.002, beta1 0.5), batches of 32, non-saturating generator loss. Manual backpropagation.
-   Used by two slides:  #w-ganarch (architecture, before / after training)  and  #w-gantrain (losses and gradients with real numbers). */
+   Used by two slides:  #w-ganarch (architecture, before / after training)  and  #w-gantrain (how the images improve over time). */
 (function () {
   'use strict';
   const ZD = 4, H = 24, B = 32;
@@ -94,7 +94,7 @@
         <div class="ga-brace">⎬</div>
         <div class="ga-right" id="ga-d"><div class="ga-box disc"><b>Discriminator D</b><small>a classifier:<br>image → probability “real”</small></div><div class="ga-arr">↓</div><div class="ga-verdict">real or fake?<br><small>numbers under each image = D’s probability “real”</small></div></div>
       </div>
-      <div class="ga-fb" id="ga-fb">◂ feedback: D’s verdict tells G how to change its fakes so that D says “real” ▸ G never sees real images directly</div>`;
+      <div class="ga-fb">◂ D’s verdict is G’s only feedback: G never sees the real images ▸</div>`;
     const $ = (s) => root.querySelector(s);
     function imgs(box, arr, scores, n) { box.innerHTML = ''; for (let i = 0; i < n; i++) { const w = document.createElement('div'); w.innerHTML = '<canvas></canvas><div class="tiny" style="text-align:center">' + sc(scores[i]) + '</div>'; box.appendChild(w); paint(w.querySelector('canvas'), arr.subarray(i * 64, (i + 1) * 64), 6); } }
     function show() {
@@ -108,81 +108,38 @@
     $('#ga-un').addEventListener('click', reset);
     $('#ga-tr').addEventListener('click', () => { if (gan.step === 0) { gan.train(1500); show(); } });
     $('#ga-nz').addEventListener('click', show);
-    function setStage(s) { stage = s; const a = [['#ga-l1', 1], ['#ga-d', 2], ['#ga-fb', 3]]; a.forEach(([sel, k]) => { const e = $(sel); e.style.opacity = (!s || s === k || (s === 2 && sel === '#ga-l2')) ? 1 : 0.25; }); $('#ga-l2').style.opacity = (!s || s === 2) ? 1 : 0.25; }
-    window.GA_SET = setStage;
-    const items = Array.from(document.querySelectorAll('#gan-steps li'));
-    function set(n) { setStage(n); items.forEach((li, i) => li.classList.toggle('on', i + 1 === n)); }
-    items.forEach((li, i) => li.addEventListener('click', () => set(i + 1 === 4 ? 0 : i + 1)));
-    const nb = document.getElementById('gan-next'), ab = document.getElementById('gan-all');
-    if (nb) nb.addEventListener('click', () => set((stage % 3) + 1)); if (ab) ab.addEventListener('click', () => set(0));
-    Deck.on('ganarch', () => { reset(); set(0); });
+    Deck.on('ganarch', () => { reset(); });
   })();
 
   /* =================================================================
-     TRAINING with real numbers
+     HOW THE IMAGES GET BETTER OVER TIME
      ================================================================= */
   (function train() {
     const root = document.getElementById('w-gantrain'); if (!root) return;
-    let gan = null, cls = 0, timer = null, stage = 'none';
+    let gan = null, cls = 0, timer = null;
+    const MARKS = [0, 25, 100, 300, 1000, 2000];
     root.innerHTML = `
-      <div class="row" style="margin-bottom:.5rem;gap:.6rem">
+      <div class="row" style="margin-bottom:.6rem;gap:.7rem">
         <label class="ctl" style="margin:0">Real data<div class="seg" id="gt-c"><button data-c="0" class="on">zeros</button><button data-c="3">threes</button><button data-c="7">sevens</button></div></label>
-        <span class="spacer"></span>
-        <button class="btn" id="gt-d">① D step</button><button class="btn" id="gt-g">② G step</button><button class="btn primary" id="gt-run">▶ Run</button><button class="btn small" id="gt-100">+100</button><button class="btn small" id="gt-reset">Reset</button>
-        <span class="small" id="gt-n" style="min-width:6rem;text-align:right"></span>
+        <span class="spacer"></span><button class="btn primary" id="gt-run">▶ Train</button><button class="btn small" id="gt-reset">Reset</button>
       </div>
-      <div class="gt">
-        <div class="gt-col">
-          <div class="gt-p" id="gt-pd"><div class="gt-h"><span class="gt-num">①</span> D learns: real → 1, fake → 0</div>
-            <div class="gt-imgs" id="gt-real"></div><div class="gt-imgs" id="gt-fake"></div>
-            <div class="calc" id="gt-ld" style="margin-top:.4rem"></div></div>
-          <div class="gt-p" id="gt-pg"><div class="gt-h"><span class="gt-num">②</span> G learns: make D say “real”</div>
-            <div class="row" style="gap:.7rem;align-items:flex-start"><div><canvas id="gt-b"></canvas><div class="tiny">a fake G(z)<br>D says <span id="gt-pb"></span></div></div><div style="font-size:1.4rem;padding-top:1rem">→</div><div><canvas id="gt-gr"></canvas><div class="tiny">D’s advice for each pixel<br><span style="color:var(--pos);font-weight:800">■</span> brighter · <span style="color:var(--neg);font-weight:800">■</span> darker</div></div><div style="font-size:1.4rem;padding-top:1rem">→</div><div><canvas id="gt-a"></canvas><div class="tiny">same z after the G update<br>D says <span id="gt-pa"></span></div></div></div>
-            <div class="calc" id="gt-lg" style="margin-top:.4rem"></div></div>
-        </div>
-        <div class="gt-col">
-          <div class="gt-p"><div class="gt-h">Losses during training</div><canvas id="gt-cv" style="width:100%"></canvas>
-            <div class="tiny"><b style="color:var(--accent)">━</b> D loss (rests at 2 ln 2 ≈ 1.39) &nbsp; <b style="color:var(--gen)">━</b> G loss (rests at ln 2 ≈ 0.69) &nbsp; ┄ equilibrium: D guesses ½</div></div>
-          <div class="gt-p"><div class="gt-h">The same noise z, over training</div><div class="gt-imgs" id="gt-snaps"></div></div>
-          <div class="gt-p"><div class="gt-h">Eight fresh samples now</div><div class="gt-imgs" id="gt-smp"></div></div>
-        </div>
+      <div class="gt1">
+        <div class="gt-p"><div class="gt-h">The same noise vector z, over training <span class="tiny" style="font-weight:500">(number = training steps)</span></div><div class="gt-imgs" id="gt-snaps"></div></div>
+        <div class="gt-p"><div class="gt-h">Sixteen new fakes <span id="gt-n" style="float:right;font-weight:600;color:var(--muted)"></span></div><div class="gt-imgs gt-wrap" id="gt-smp"></div>
+          <div class="tiny" id="gt-l" style="margin-top:.3rem"></div></div>
+        <div class="gt-p"><div class="gt-h">For comparison: real digits</div><div class="gt-imgs gt-wrap" id="gt-real"></div></div>
       </div>`;
     const $ = (s) => root.querySelector(s);
-    const f2 = (v) => v.toFixed(2);
-    function imgRow(box, arr, scores, n) { box.innerHTML = ''; for (let i = 0; i < n; i++) { const w = document.createElement('div'); w.innerHTML = '<canvas></canvas><div class="tiny" style="text-align:center">' + (scores ? sc(scores[i]) : '') + '</div>'; box.appendChild(w); paint(w.querySelector('canvas'), arr.subarray ? arr.subarray(i * 64, (i + 1) * 64) : arr.slice(i * 64, (i + 1) * 64), 5); } }
-    function curves() {
-      const cv = $('#gt-cv'), W = Math.max(260, cv.parentElement.clientWidth - 20), Hh = 130, ctx = U.fit(cv, W, Hh), { lD, lG } = gan.hist, n = lD.length, ymax = 3;
-      ctx.strokeStyle = '#e2dfd5'; ctx.beginPath(); ctx.moveTo(0, Hh - 1); ctx.lineTo(W, Hh - 1); ctx.stroke();
-      const Y = (v) => Hh - 6 - U.clamp(v / ymax, 0, 1) * (Hh - 12);
-      ctx.setLineDash([4, 4]); ctx.strokeStyle = '#2859e066'; ctx.beginPath(); ctx.moveTo(0, Y(1.386)); ctx.lineTo(W, Y(1.386)); ctx.stroke(); ctx.strokeStyle = '#e8712d66'; ctx.beginPath(); ctx.moveTo(0, Y(0.693)); ctx.lineTo(W, Y(0.693)); ctx.stroke(); ctx.setLineDash([]);
-      const draw = (arr, col) => { if (n < 2) return; ctx.strokeStyle = col; ctx.lineWidth = 1.8; ctx.beginPath(); const win = 8; for (let i = 0; i < n; i++) { let s = 0, c = 0; for (let j = Math.max(0, i - win); j <= i; j++) { s += arr[j]; c++; } const x = (i / Math.max(n - 1, 1)) * (W - 4) + 2, y = Y(s / c); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke(); };
-      draw(lD, '#2859e0'); draw(lG, '#e8712d');
-    }
+    function tiles(box, arr, n, cs, labels) { box.innerHTML = ''; for (let i = 0; i < n; i++) { const w = document.createElement('div'); w.innerHTML = '<canvas></canvas>' + (labels ? '<div class="tiny" style="text-align:center">' + labels[i] + '</div>' : ''); box.appendChild(w); paint(w.querySelector('canvas'), arr.subarray ? arr.subarray(i * 64, (i + 1) * 64) : arr[i], cs); } }
     function views() {
-      const d = gan.last.d, g = gan.last.g;
+      const sn = gan.snaps, box = $('#gt-snaps'); box.innerHTML = ''; sn.forEach((s) => { const w = document.createElement('div'); w.innerHTML = '<canvas></canvas><div class="tiny" style="text-align:center">' + s.step + '</div>'; box.appendChild(w); paint(w.querySelector('canvas'), s.img, 8); });
+      const z = gan.noise(16), smp = gan.sample(z, 16); tiles($('#gt-smp'), smp, 16, 6);
       $('#gt-n').textContent = gan.step.toLocaleString('en-US') + ' steps';
-      if (d) {
-        imgRow($('#gt-real'), d.xr, d.pr, 6); imgRow($('#gt-fake'), d.xf, d.pf, 6);
-        $('#gt-real').insertAdjacentHTML('afterbegin', '<div class="gt-lab">real</div>'); $('#gt-fake').insertAdjacentHTML('afterbegin', '<div class="gt-lab">fake</div>');
-        $('#gt-ld').innerHTML = 'D loss = −mean log D(real) − mean log(1 − D(fake))<br>= −log(' + f2(d.mr) + ') − log(1 − ' + f2(d.mf) + ') ≈ ' + f2(d.lr) + ' + ' + f2(d.lf) + ' = <span class="res">' + f2(d.loss) + '</span> <span class="tiny">(averages over the batch of 32)</span>';
-      } else { $('#gt-real').innerHTML = ''; $('#gt-fake').innerHTML = ''; $('#gt-ld').innerHTML = 'Press <b>① D step</b>: show D a batch of real and fake images.'; }
-      if (g) {
-        const m = Math.max(1e-9, ...g.grad.map(Math.abs));
-        paint($('#gt-b'), g.before, 7); paint($('#gt-gr'), g.grad, 7, 'div', m); paint($('#gt-a'), g.after, 7);
-        $('#gt-pb').innerHTML = sc(g.pBefore); $('#gt-pa').innerHTML = sc(g.pAfter);
-        $('#gt-lg').innerHTML = 'G loss = −mean log D(G(z)) = −log(' + f2(g.mf) + ') ≈ <span class="res">' + f2(g.lossG) + '</span>.<br><span class="tiny">The gradient flows <b>through D</b> (its weights stay fixed in this step) back into G’s weights.</span>';
-      } else { ['#gt-b', '#gt-gr', '#gt-a'].forEach((q) => { const c = $(q); U.fit(c, 56, 56).clearRect(0, 0, 60, 60); c.style.border = '1px dashed #cfcabb'; }); $('#gt-pb').textContent = ''; $('#gt-pa').textContent = ''; $('#gt-lg').innerHTML = 'Press <b>② G step</b>.'; }
-      const sn = $('#gt-snaps'); sn.innerHTML = ''; gan.snaps.forEach((s) => { const w = document.createElement('div'); w.innerHTML = '<canvas></canvas><div class="tiny" style="text-align:center">' + s.step + '</div>'; sn.appendChild(w); paint(w.querySelector('canvas'), s.img, 5); });
-      const smp = gan.sample(gan.fixedZ, 8), box = $('#gt-smp'); box.innerHTML = ''; for (let i = 0; i < 8; i++) { const w = document.createElement('div'); w.innerHTML = '<canvas></canvas>'; box.appendChild(w); paint(w.querySelector('canvas'), smp.subarray(i * 64, (i + 1) * 64), 5); }
-      $('#gt-pd').style.outline = stage === 'd' ? '3px solid var(--accent)' : 'none'; $('#gt-pg').style.outline = stage === 'g' ? '3px solid var(--gen)' : 'none';
-      curves();
+      const h = gan.hist, n = h.lD.length; if (n) { const a = (arr) => arr.slice(-20).reduce((x, y) => x + y, 0) / Math.min(20, arr.length); $('#gt-l').innerHTML = 'Discriminator loss ' + a(h.lD).toFixed(2) + ' · generator loss ' + a(h.lG).toFixed(2) + ' (recent average; D’s loss tends to 1.39 when it can only guess)'; } else $('#gt-l').textContent = '';
     }
-    function reset() { stop(); gan = MiniGAN(cls, 3 + cls); stage = 'none'; views(); }
-    function stop() { clearInterval(timer); timer = null; $('#gt-run').textContent = '▶ Run'; }
-    $('#gt-d').addEventListener('click', () => { stop(); gan.dStep(); stage = 'd'; views(); });
-    $('#gt-g').addEventListener('click', () => { stop(); const g = gan.gStep(); gan.step++; gan.hist.lD.push(gan.last.d ? gan.last.d.loss : 1.39); gan.hist.lG.push(g.lossG); gan.hist.pr.push(0.5); gan.hist.pf.push(0.5); gan.snap(); stage = 'g'; views(); });
-    $('#gt-100').addEventListener('click', () => { stop(); gan.train(100); stage = 'none'; views(); });
-    $('#gt-run').addEventListener('click', () => { if (timer) { stop(); return; } $('#gt-run').textContent = '❚❚ Pause'; stage = 'none'; timer = setInterval(() => { gan.train(12); views(); if (gan.step >= 3000) stop(); }, 60); });
+    function reset() { stop(); gan = MiniGAN(cls, 3 + cls); const r = gan.realImgs(16); tiles($('#gt-real'), r, 16, 6); views(); }
+    function stop() { clearInterval(timer); timer = null; $('#gt-run').textContent = '▶ Train'; }
+    $('#gt-run').addEventListener('click', () => { if (timer) { stop(); return; } $('#gt-run').textContent = '❚❚ Pause'; timer = setInterval(() => { gan.train(12); views(); if (gan.step >= 2400) stop(); }, 60); });
     $('#gt-reset').addEventListener('click', reset);
     root.querySelectorAll('#gt-c button').forEach((b) => b.addEventListener('click', () => { root.querySelectorAll('#gt-c button').forEach((x) => x.classList.remove('on')); b.classList.add('on'); cls = +b.dataset.c; reset(); }));
     Deck.on('gantrain', () => { if (!gan) reset(); else { stop(); views(); } });

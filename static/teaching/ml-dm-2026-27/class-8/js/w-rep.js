@@ -2,7 +2,7 @@
    1. par      : designed filters vs learned filters on the same digit        (slide "paradigm")
    2. routes   : two routes to learn a representation without labels          (slide "routes")
    3. aediag   : autoencoder diagram with a bottleneck toggle                 (slide "aediag")
-   4. pcai     : PCA intuition: the direction that keeps the most spread      (slide "pcaintuit") */
+   4. two      : images (data space) and their vectors (representation space)  (slide "twosides") */
 (function () {
   'use strict';
 
@@ -108,7 +108,7 @@
         <text x="785" y="48" text-anchor="middle" font-weight="800" font-size="15">output x̂</text><text x="785" y="190" text-anchor="middle" font-size="11" fill="#555">64 numbers</text>
         <g stroke="#667180" stroke-width="2.5" marker-end="url(#ad-ah)"><line x1="132" y1="115" x2="168" y2="115"/><line x1="362" y1="115" x2="388" y2="115"/><line x1="472" y1="115" x2="498" y2="115"/><line x1="692" y1="115" x2="728" y2="115"/></g>
         <path d="M785 200 L785 250 L75 250 L75 202" fill="none" stroke="#c0392b" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#ad-rh)"/>
-        <rect x="270" y="236" width="320" height="28" rx="8" fill="#fff" stroke="#c0392b" stroke-width="2"/><text x="430" y="255" text-anchor="middle" font-weight="800" font-size="14" fill="#c0392b">loss = ‖ x − x̂ ‖²   (compare with the INPUT)</text>
+        <rect x="270" y="236" width="320" height="28" rx="8" fill="#fff" stroke="#c0392b" stroke-width="2"/><text x="430" y="255" text-anchor="middle" font-weight="800" font-size="14" fill="#c0392b">loss: compare the output x̂ with the INPUT x</text>
         <text x="430" y="290" text-anchor="middle" font-size="12" font-weight="700" fill="#667180" id="ad-note"></text>
       </svg></div>`;
     const $ = (s) => root.querySelector(s);
@@ -129,79 +129,43 @@
   })();
 
   /* =================================================================
-     4. PCA INTUITION
+     4. DATA SPACE <-> REPRESENTATION SPACE (real digits, real PCA)
      ================================================================= */
-  (function pcai() {
-    const root = document.getElementById('w-pcai'); if (!root) return;
-    const rnd = U.mulberry32(21), N = 60, pts = [];
-    for (let i = 0; i < N; i++) { const t = U.gauss(rnd) * 1.0, e = U.gauss(rnd) * 0.28; const a = 0.52; pts.push([t * Math.cos(a) - e * Math.sin(a), t * Math.sin(a) + e * Math.cos(a)]); }
-    const mean = [0, 1].map((k) => pts.reduce((s, p) => s + p[k], 0) / N);
-    const P = pts.map((p) => [p[0] - mean[0], p[1] - mean[1]]);
-    const Sxx = P.reduce((s, p) => s + p[0] * p[0], 0), Syy = P.reduce((s, p) => s + p[1] * p[1], 0), Sxy = P.reduce((s, p) => s + p[0] * p[1], 0), TOT = Sxx + Syy;
-    const best = 0.5 * Math.atan2(2 * Sxy, Sxx - Syy);
-    let th = 2.3, anim = null;
-    root.innerHTML = `
-      <div class="row" style="margin-bottom:.5rem;gap:.9rem"><label class="ctl" style="margin:0;min-width:15rem">Direction of the line <span class="val" id="pc-a">–</span><input type="range" id="pc-s" min="0" max="180" step="1" value="130"></label><button class="btn primary" id="pc-best">Find the best direction</button></div>
-      <div class="grid g-side" style="align-items:center">
-        <div class="card flat" style="padding:.4rem"><canvas id="pc-cv" style="display:block;width:100%"></canvas></div>
-        <div>
-          <div class="stat cool"><div class="n" id="pc-k" style="font-size:1.3rem">–</div><div class="l">of the spread kept by 1 number per point</div></div>
-          <div class="stat hot mt"><div class="n" id="pc-e" style="font-size:1.3rem">–</div><div class="l">lost when rebuilding the point from that 1 number</div></div>
-          <div class="callout mt" id="pc-m" style="font-size:.92rem"></div>
-        </div>
-      </div>`;
-    const $ = (s) => root.querySelector(s), cv = $('#pc-cv');
-    function draw() {
-      const W = Math.max(300, Math.min(520, cv.parentElement.clientWidth - 12)), H = 300, ctx = U.fit(cv, W, H), sc = 62, cx = W / 2, cy = 150;
-      const X = (v) => cx + v * sc, Y = (v) => cy - v * sc, u = [Math.cos(th), Math.sin(th)];
-      ctx.strokeStyle = '#e2dfd5'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy); ctx.moveTo(cx, 0); ctx.lineTo(cx, H); ctx.stroke();
-      ctx.strokeStyle = '#e8712d'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(X(-3.4 * u[0]), Y(-3.4 * u[1])); ctx.lineTo(X(3.4 * u[0]), Y(3.4 * u[1])); ctx.stroke();
-      let kept = 0;
-      P.forEach((p) => { const t = p[0] * u[0] + p[1] * u[1]; kept += t * t; const fx = t * u[0], fy = t * u[1];
-        ctx.strokeStyle = 'rgba(192,57,43,.55)'; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.moveTo(X(p[0]), Y(p[1])); ctx.lineTo(X(fx), Y(fy)); ctx.stroke();
-        ctx.fillStyle = '#e8712d'; ctx.beginPath(); ctx.arc(X(fx), Y(fy), 2.4, 0, 7); ctx.fill(); });
-      P.forEach((p) => { ctx.fillStyle = '#2859e0'; ctx.beginPath(); ctx.arc(X(p[0]), Y(p[1]), 4, 0, 7); ctx.fill(); });
-      ctx.fillStyle = '#667180'; ctx.font = '600 11px system-ui'; ctx.fillText('blue: data (2 numbers each)', 8, 14); ctx.fillStyle = '#e8712d'; ctx.fillText('orange: rebuilt from 1 number', 8, 28); ctx.fillStyle = '#c0392b'; ctx.fillText('red: what is lost', 8, 42);
-      const k = kept / TOT, deg = Math.round(th * 180 / Math.PI);
-      $('#pc-a').textContent = deg + '°'; $('#pc-s').value = deg;
-      $('#pc-k').textContent = (k * 100).toFixed(0) + ' %'; $('#pc-e').textContent = ((1 - k) * 100).toFixed(0) + ' %';
-      const d = Math.abs(((th - best) % Math.PI + Math.PI * 1.5) % Math.PI - Math.PI / 2);
-      $('#pc-m').innerHTML = d < 0.04 ? '<b>This is the first principal component</b>: the direction that keeps the most spread, hence loses the least.' : 'Turn the line: the more it follows the cloud, the less is lost.';
+  (function two() {
+    const root = document.getElementById('w-two'); if (!root) return;
+    const D = U.digits(), N = 400, K = 8;
+    // a simple linear encoder (PCA, computed here by power iteration) gives a real 8-number vector for every digit
+    const mean = new Float64Array(64); for (let i = 0; i < N; i++) for (let j = 0; j < 64; j++) mean[j] += D.X[i * 64 + j] / N;
+    const X = []; for (let i = 0; i < N; i++) { const r = new Float64Array(64); for (let j = 0; j < 64; j++) r[j] = D.X[i * 64 + j] - mean[j]; X.push(r); }
+    const comps = [], rnd = U.mulberry32(5);
+    for (let c = 0; c < K; c++) {
+      let v = new Float64Array(64).map(() => rnd() - .5);
+      for (let it = 0; it < 60; it++) { const w = new Float64Array(64); for (let i = 0; i < N; i++) { let d = 0; for (let j = 0; j < 64; j++) d += X[i][j] * v[j]; for (let j = 0; j < 64; j++) w[j] += d * X[i][j]; } let n = 0; for (let j = 0; j < 64; j++) n += w[j] * w[j]; n = Math.sqrt(n) || 1; v = w.map((q) => q / n); }
+      comps.push(v); for (let i = 0; i < N; i++) { let d = 0; for (let j = 0; j < 64; j++) d += X[i][j] * v[j]; for (let j = 0; j < 64; j++) X[i][j] -= d * v[j]; }
     }
-    function norm(a) { return ((a % Math.PI) + Math.PI) % Math.PI; }
-    $('#pc-s').addEventListener('input', (e) => { th = +e.target.value * Math.PI / 180; draw(); });
-    $('#pc-best').addEventListener('click', () => { clearInterval(anim); const target = norm(best); let from = norm(th); if (target - from > Math.PI / 2) from += Math.PI; if (from - target > Math.PI / 2) from -= Math.PI; let t = 0; anim = setInterval(() => { t += 0.07; th = U.lerp(from, target, Math.min(1, t)); draw(); if (t >= 1) { clearInterval(anim); th = target; draw(); } }, 30); });
-    Deck.on('pcaintuit', () => { clearInterval(anim); th = 2.3; draw(); });
-  })();
-  /* =================================================================
-     5. LINEAR AUTOENCODER = PCA; NON-LINEAR CAN FOLLOW A CURVE
-     ================================================================= */
-  (function linae() {
-    const root = document.getElementById('w-linae'); if (!root) return;
-    const rnd = U.mulberry32(8), N = 70, pts = [];
-    for (let i = 0; i < N; i++) { const t = -1.25 + 2.5 * (i + rnd() * .6) / N; pts.push([t, 0.9 * t * t - 0.45 + U.gauss(rnd) * 0.05]); }
-    root.innerHTML = '<div class="grid g2"><div class="card flat" style="padding:.5rem"><div class="tiny" style="font-weight:800;color:#8a93a3">LINEAR: PCA / LINEAR AUTOENCODER</div><canvas id="la-a" style="width:100%"></canvas><div class="small" id="la-ea"></div></div><div class="card flat" style="padding:.5rem"><div class="tiny" style="font-weight:800;color:var(--dec)">NON-LINEAR AUTOENCODER</div><canvas id="la-b" style="width:100%"></canvas><div class="small" id="la-eb"></div></div></div>';
-    const $ = (s) => root.querySelector(s), f = (t) => 0.9 * t * t - 0.45;
+    const Z = []; for (let i = 0; i < N; i++) { const z = []; for (let c = 0; c < K; c++) { let d = 0; for (let j = 0; j < 64; j++) d += (D.X[i * 64 + j] - mean[j]) * comps[c][j]; z.push(d); } Z.push(z); }
+    const COL = ['#e8712d', '#2859e0', '#1f8a4c', '#8e44ad', '#c0392b', '#0d8f7f', '#b69b3f', '#667180', '#d6336c', '#17202c'];
+    let sel = 7;
+    root.innerHTML = `<div class="row top" style="gap:.8rem;align-items:center;flex-wrap:wrap">
+        <div style="flex:1;min-width:15rem"><div class="two-h">IMAGES <span class="tiny" style="font-weight:500">each is 64 numbers: a point in a 64-dimensional space</span></div><div class="two-grid" id="tw-g"></div></div>
+        <div class="two-arrows"><div style="color:#0a6b5e"><b>Encoder f</b><br>image → vector z<br><span style="font-size:2rem">⟶</span></div><div style="color:#a14a12"><span style="font-size:2rem">⟵</span><br><b>Decoder g</b><br>vector z → image</div></div>
+        <div style="flex:1.2;min-width:17rem"><div class="two-h">REPRESENTATIONS <span class="tiny" style="font-weight:500">each image becomes a vector z of 8 numbers</span></div>
+          <div class="row" style="gap:.8rem;align-items:flex-start"><div><canvas id="tw-sc" style="border:1px solid var(--line);border-radius:10px;background:#fff"></canvas><div class="tiny">two of the 8 coordinates (z₁, z₂); colour = digit, for display only</div></div>
+          <div><canvas id="tw-im" style="border:1px solid rgba(23,32,44,.3)"></canvas><div class="tiny" style="margin:.3rem 0 .1rem;font-weight:800">z =</div><canvas id="tw-z"></canvas></div></div></div></div>`;
+    const $ = (s) => root.querySelector(s), box = $('#tw-g');
+    const cvs = [];
+    for (let i = 0; i < 24; i++) { const c = document.createElement('canvas'); c.className = 'two-th'; c.addEventListener('click', () => { sel = i * 13 % N; draw(); }); box.appendChild(c); cvs.push(c); }
+    const idxs = Array.from({ length: 24 }, (_, i) => i * 13 % N);
     function draw() {
-      const W = Math.max(260, Math.min(460, $('#la-a').parentElement.clientWidth - 12)), Hh = 230, sc = 70, X = (v) => W / 2 + v * sc, Y = (v) => 118 - v * sc;
-      const mx = pts.reduce((s, p) => s + p[0], 0) / N, my = pts.reduce((s, p) => s + p[1], 0) / N;
-      let Sxx = 0, Syy = 0, Sxy = 0; pts.forEach((p) => { const a = p[0] - mx, b = p[1] - my; Sxx += a * a; Syy += b * b; Sxy += a * b; });
-      const th = 0.5 * Math.atan2(2 * Sxy, Sxx - Syy), u = [Math.cos(th), Math.sin(th)];
-      let eL = 0, eC = 0;
-      [['#la-a', 0], ['#la-b', 1]].forEach(([q, mode]) => {
-        const ctx = U.fit($(q), W, Hh); ctx.strokeStyle = '#e2dfd5'; ctx.beginPath(); ctx.moveTo(0, Y(0)); ctx.lineTo(W, Y(0)); ctx.stroke();
-        ctx.lineWidth = 3; ctx.strokeStyle = mode ? '#7c4fd6' : '#8a93a3'; ctx.beginPath();
-        if (mode) { for (let t = -1.5; t <= 1.5; t += 0.05) { t === -1.5 ? ctx.moveTo(X(t), Y(f(t))) : ctx.lineTo(X(t), Y(f(t))); } } else { ctx.moveTo(X(mx - 2 * u[0]), Y(my - 2 * u[1])); ctx.lineTo(X(mx + 2 * u[0]), Y(my + 2 * u[1])); }
-        ctx.stroke();
-        pts.forEach((p) => { let q2;
-          if (mode) { let best = 1e9, bt = 0; for (let t = -1.5; t <= 1.5; t += 0.01) { const d = (t - p[0]) ** 2 + (f(t) - p[1]) ** 2; if (d < best) { best = d; bt = t; } } q2 = [bt, f(bt)]; eC += best; }
-          else { const t = (p[0] - mx) * u[0] + (p[1] - my) * u[1]; q2 = [mx + t * u[0], my + t * u[1]]; eL += (p[0] - q2[0]) ** 2 + (p[1] - q2[1]) ** 2; }
-          ctx.strokeStyle = 'rgba(192,57,43,.5)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(X(p[0]), Y(p[1])); ctx.lineTo(X(q2[0]), Y(q2[1])); ctx.stroke(); });
-        pts.forEach((p) => { ctx.fillStyle = '#2859e0'; ctx.beginPath(); ctx.arc(X(p[0]), Y(p[1]), 3.6, 0, 7); ctx.fill(); });
-      });
-      $('#la-ea').innerHTML = 'One number per point · average rebuild error <b>' + (eL / N).toFixed(3) + '</b>';
-      $('#la-eb').innerHTML = 'One number per point · average rebuild error <b>' + (eC / N).toFixed(3) + '</b>';
+      idxs.forEach((n, i) => { const ctx = U.fit(cvs[i], 40, 40); U.drawGrid(ctx, D.X.subarray(n * 64, n * 64 + 64), 8, 0, 0, 5); cvs[i].style.outline = n === sel ? '3px solid #e8712d' : 'none'; });
+      const W = 250, H = 230, ctx = U.fit($('#tw-sc'), W, H), xs = Z.map((z) => z[0]), ys = Z.map((z) => z[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+      const X = (v) => 14 + (v - x0) / (x1 - x0) * (W - 28), Y = (v) => H - 14 - (v - y0) / (y1 - y0) * (H - 28);
+      Z.forEach((z, i) => { ctx.fillStyle = COL[D.y[i]] + 'aa'; ctx.beginPath(); ctx.arc(X(z[0]), Y(z[1]), 3.2, 0, 7); ctx.fill(); });
+      ctx.strokeStyle = '#e8712d'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(X(Z[sel][0]), Y(Z[sel][1]), 8, 0, 7); ctx.stroke();
+      const c2 = U.fit($('#tw-im'), 72, 72); U.drawGrid(c2, D.X.subarray(sel * 64, sel * 64 + 64), 8, 0, 0, 9);
+      const cz = U.fit($('#tw-z'), 72, 8 * 11), m = Math.max(...Z[sel].map(Math.abs));
+      Z[sel].forEach((v, c) => { cz.fillStyle = U.div(v / m); cz.fillRect(0, c * 11, 70, 10); });
     }
-    Deck.on('linearae', draw);
+    Deck.on('twosides', draw);
   })();
 })();
