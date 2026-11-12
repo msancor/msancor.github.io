@@ -213,8 +213,8 @@
   /* =================================================================
      6. A REAL FORWARD PASS THROUGH A SMALL TRAINED CNN
      ================================================================= */
-  (function arch() {
-    const root = document.getElementById('w-arch'); if (!root) return;
+  ['w-arch', 'w-arch2'].forEach(function (rid) {
+    const root = document.getElementById(rid); if (!root) return; const EX = root.dataset.mode === 'ex';
     const M = window.CNN_MODEL, D = U.digits(); let di = 7;
     root.innerHTML = `<div class="row" style="margin-bottom:.5rem"><button class="btn small" id="ar-next">Another digit</button><span class="small" id="ar-res"></span></div>
       <div class="ar">
@@ -246,9 +246,10 @@
       ctx = U.fit($('#ar-fl'), 9 * 12, 6 * 12); const mx = Math.max(1e-6, ...o.fl); for (let i = 0; i < 54; i++) { ctx.fillStyle = U.ink(o.fl[i] / mx); ctx.fillRect((i % 9) * 12, Math.floor(i / 9) * 12, 11.3, 11.3); }
       ctx = U.fit($('#ar-out'), 130, 10 * 17); const best = o.p.indexOf(Math.max(...o.p));
       for (let k = 0; k < 10; k++) { ctx.fillStyle = k === best ? '#e8712d' : '#cfcabb'; ctx.fillRect(16, k * 17 + 2, Math.max(1, o.p[k] * 110), 13); ctx.fillStyle = '#17202c'; ctx.font = '700 11px system-ui'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(k, 2, k * 17 + 9); }
+      if (EX) { $('#ar-res').innerHTML = 'A real digit goes through the network. The pictures are real feature maps.'; return; }
       $('#ar-res').innerHTML = 'Real forward pass: the network predicts <b>' + best + '</b> (probability ' + o.p[best].toFixed(2) + '); true label: <b>' + D.y[di] + '</b>.';
     }
     $('#ar-next').addEventListener('click', () => { di = (di * 7 + 13) % D.n; draw(); });
-    Deck.on('arch', draw);
-  })();
+    Deck.on(root.closest('.slide').id, draw);
+  });
 })();

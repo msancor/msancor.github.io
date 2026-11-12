@@ -464,3 +464,9 @@ ol.qs li::before { content: counter(q); position: absolute; left: .8rem; top: .5
 .wl-out { border: 2px solid var(--accent); border-radius: 10px; padding: .4rem .7rem; font-weight: 800; font-size: .85rem; background: #fff; text-align: center; }
 .wl-zs { display: inline-flex; gap: 3px; } .wl-z { width: 12px; height: 42px; border-radius: 3px; display: inline-block; border: 1px solid rgba(23,32,44,.2); }
 .wl-reuse { text-align: center; font-weight: 800; color: #0a6b5e; margin: .3rem 0; font-size: .9rem; }
+.ga2 { display: grid; grid-template-columns: auto 2rem auto 2rem auto 2rem auto 2rem auto; grid-template-rows: auto auto auto; align-items: center; row-gap: 1.1rem; }
+.ga2 .g-a { display: flex; flex-direction: column; gap: .25rem; } .ga2 .g-arr { text-align: center; font-size: 1.7rem; font-weight: 800; color: var(--muted); }
+.ga2 .ga-box { min-width: 0; } .ga2 .ga-verdict { max-width: 10rem; }
+.ga-fb2 { border: 2px dashed var(--gen); border-top: 0; border-radius: 0 0 14px 14px; height: 2.1rem; position: relative; text-align: center; font-size: .78rem; font-weight: 700; color: var(--gen); padding-top: .35rem; margin-top: -.5rem; }
+.ga-up { position: absolute; left: 3.2rem; top: -.95rem; font-size: .9rem; }
+.slide .hands-on.wide { grid-template-columns: minmax(0, 1fr); }

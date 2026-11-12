@@ -86,15 +86,22 @@
     let gan = null, stage = 0;
     root.innerHTML = `
       <div class="row" style="margin-bottom:.5rem;gap:.7rem"><button class="btn" id="ga-un">Untrained G</button><button class="btn primary" id="ga-tr">Train 1,500 steps ▸</button><button class="btn small" id="ga-nz">New noise &amp; new real images</button><span class="small" id="ga-st"></span></div>
-      <div class="ga">
-        <div class="ga-left">
-          <div class="ga-line" id="ga-l1"><div class="ga-cell"><div class="tiny">① random noise z (4 numbers each)</div><div id="ga-z" class="ga-imgs"></div></div><div class="ga-arr">→</div><div class="ga-box gen"><b>Generator G</b><small>maps noise to an image<br>(the decoder side)</small></div><div class="ga-arr">→</div><div class="ga-cell"><div class="tiny">fake images G(z)</div><div id="ga-fk" class="ga-imgs"></div></div></div>
-          <div class="ga-line" id="ga-l2"><div class="ga-cell"><div class="tiny">the training dataset</div><div class="ga-ds">1,000 real digits</div></div><div class="ga-arr">→</div><div class="ga-gap"></div><div class="ga-arr" style="visibility:hidden">→</div><div class="ga-cell"><div class="tiny">real images x</div><div id="ga-rl" class="ga-imgs"></div></div></div>
-        </div>
-        <div class="ga-brace">⎬</div>
-        <div class="ga-right" id="ga-d"><div class="ga-box disc"><b>Discriminator D</b><small>a classifier:<br>image → probability “real”</small></div><div class="ga-arr">↓</div><div class="ga-verdict">real or fake?<br><small>numbers under each image = D’s probability “real”</small></div></div>
-      </div>
-      <div class="ga-fb">◂ D’s verdict is G’s only feedback: G never sees the real images ▸</div>`;
+      <div class="ga2">
+        <div class="g-a" style="grid-area:1/1"><div class="tiny">random noise <b>z</b></div><div id="ga-z" class="ga-imgs"></div></div>
+        <div class="g-arr" style="grid-area:1/2">→</div>
+        <div class="ga-box gen" style="grid-area:1/3"><b>Generator G</b><small>noise → image</small></div>
+        <div class="g-arr" style="grid-area:1/4">→</div>
+        <div class="g-a" style="grid-area:1/5"><div class="tiny">fake images <b>G(z)</b></div><div id="ga-fk" class="ga-imgs"></div></div>
+        <div class="g-arr" style="grid-area:1/6">→</div>
+        <div class="g-a" style="grid-area:2/1"><div class="tiny">training dataset</div><div class="ga-ds">1,000 real digits</div></div>
+        <div class="g-arr" style="grid-area:2/2/3/5;border-top:3px solid #667180;position:relative;height:0;align-self:center"><span style="position:absolute;right:-4px;top:-1.25rem">▸</span></div>
+        <div class="g-a" style="grid-area:2/5"><div class="tiny">real images <b>x</b></div><div id="ga-rl" class="ga-imgs"></div></div>
+        <div class="g-arr" style="grid-area:2/6">→</div>
+        <div class="ga-box disc" style="grid-area:1/7/3/8;align-self:center"><b>Discriminator D</b><small>image → probability<br>of being “real”</small></div>
+        <div class="g-arr" style="grid-area:1/8/3/9;align-self:center">→</div>
+        <div class="ga-verdict" style="grid-area:1/9/3/10;align-self:center">real or fake?<small>the number under each image is D’s probability “real”</small></div>
+        <div class="ga-fb2" style="grid-area:3/3/4/8"><span class="ga-up">▲</span><span>feedback: D’s verdict is the only signal G receives</span></div>
+      </div>`;
     const $ = (s) => root.querySelector(s);
     function imgs(box, arr, scores, n) { box.innerHTML = ''; for (let i = 0; i < n; i++) { const w = document.createElement('div'); w.innerHTML = '<canvas></canvas><div class="tiny" style="text-align:center">' + sc(scores[i]) + '</div>'; box.appendChild(w); paint(w.querySelector('canvas'), arr.subarray(i * 64, (i + 1) * 64), 6); } }
     function show() {
