@@ -97,9 +97,9 @@
      ================================================================= */
   (function brk() {
     const root = document.getElementById('w-break'); if (!root) return;
-    root.innerHTML = `<div id="bk-t" style="font-size:7rem;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1">08:00</div>
+    root.innerHTML = `<div id="bk-t" style="font-size:7rem;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1">10:00</div>
       <div class="row mt" style="justify-content:center;gap:.5rem"><button class="btn primary" id="bk-go">▶ Start</button><button class="btn" id="bk-reset">Reset</button><span class="spacer" style="flex:0 0 1rem"></span><button class="btn small" id="bk-m">− 1 min</button><button class="btn small" id="bk-p">+ 1 min</button></div>`;
-    const $ = (s) => root.querySelector(s); let total = 480, left = 480, timer = null;
+    const $ = (s) => root.querySelector(s); let total = 600, left = 600, timer = null;
     const fmt = (s) => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
     function draw() { $('#bk-t').textContent = left > 0 ? fmt(left) : 'Time’s up'; $('#bk-t').style.color = left === 0 ? 'var(--gen)' : ''; $('#bk-go').textContent = timer ? '❚❚ Pause' : (left === 0 ? '▶ Restart' : '▶ Start'); }
     function stop() { clearInterval(timer); timer = null; }

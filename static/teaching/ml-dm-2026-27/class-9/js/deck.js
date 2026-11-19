@@ -3,14 +3,14 @@
 (function () {
   'use strict';
 
-  // Planned minutes per section: 2 + 5 + 6 + 42 = 55 min before the 8-minute break, then 18 + 24 + 3 = 45 min: 108 min in total.
+  // Planned minutes per section: 2 + 5 + 6 + 42 = 55 min before the 10-minute break, then 18 + 24 + 3 = 45 min: 110 min in total.
   // The slides marked "optional" in the teaching guide (about 14 min) can be skipped to fit a 90-minute slot.
   const SECTIONS = [
     { id: 'start', label: 'Plan',                    min: 2 },
     { id: 'mlp',   label: 'MLP recap',               min: 5 },
     { id: 'why',   label: 'Why CNNs',                min: 6 },
     { id: 'cnn',   label: 'How CNNs work',           min: 42 },
-    { id: 'break', label: 'Break',                   min: 8 },
+    { id: 'break', label: 'Break',                   min: 10 },
     { id: 'rep',   label: 'Representation learning', min: 18 },
     { id: 'gan',   label: 'GANs',                    min: 24 },
     { id: 'wrap',  label: 'Wrap-up',                 min: 3 },

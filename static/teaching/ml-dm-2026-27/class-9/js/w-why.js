@@ -214,6 +214,7 @@
     }
     root.querySelectorAll('#cn-mode button').forEach((b) => b.addEventListener('click', () => {
       root.querySelectorAll('#cn-mode button').forEach((z) => z.classList.remove('on')); b.classList.add('on'); mode = b.dataset.m; draw();
+      if (mode === 'shared') { const t = document.getElementById('cn-text'); if (t) t.style.display = ''; }   // the explanation appears after "local + shared" and stays
     }));
     draw();
   })();

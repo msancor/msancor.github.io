@@ -19,23 +19,33 @@
     const root = document.getElementById('w-kernel'); if (!root) return;
     const D = U.digits();
     const SOBEL = [-1, 0, 1, -2, 0, 2, -1, 0, 1];
+    const rr = U.mulberry32(23), RANDOM = Array.from({ length: 9 }, () => Math.round(U.gauss(rr) * 8) / 10);   // illustrative random initialisation
+    const KERS = { designed: SOBEL, random: RANDOM, learned: LEARNED[1] };
+    const TXT = {
+      designed: '<b>Designed by hand.</b> Someone chose these 9 numbers so that the kernel detects <b>vertical edges</b> (nothing on the left, ink on the right). The feature map shows where that pattern occurs in this digit.',
+      random: '<b>CNN, step 1: before training.</b> The CNN starts from <b>random numbers</b> (illustrative values). The feature map looks like noise: this kernel detects nothing useful yet.',
+      learned: '<b>CNN, step 2: after training.</b> Backpropagation has adjusted the 9 numbers to reduce the classification error (this is filter 2 of our digit CNN). The kernel has become a <b>feature detector</b>: with negative weights on top and positive ones at the bottom it responds to ink that starts below an empty row, roughly the <b>top edge of horizontal strokes</b>.',
+    };
     let di = 7, r0 = 3, c0 = 2, which = 'designed';
-    const kers = () => (which === 'designed' ? SOBEL : LEARNED[1]);
+    const kers = () => KERS[which];
     root.innerHTML = `
       <div class="row" style="margin-bottom:.5rem;gap:.7rem">
-        <div class="seg" id="kn-w"><button data-w="designed" class="on">Kernel designed by hand (Sobel)</button><button data-w="learned">Kernel learned by a CNN</button></div>
+        <div class="seg" id="kn-w"><button data-w="designed" class="on">Designed by hand (Sobel)</button><button data-w="random">CNN, step 1: before training</button><button data-w="learned">CNN, step 2: after training</button></div>
         <button class="btn small" id="kn-next">Another digit</button>
         <span class="small">Click the digit to move the 3×3 window.</span>
       </div>
-      <div class="row top" style="gap:1.4rem;align-items:center;flex-wrap:wrap">
+      <div class="row top" style="gap:1.2rem;align-items:center;flex-wrap:wrap">
         <div><div class="tiny" style="font-weight:800">IMAGE x (patch highlighted)</div><canvas id="kn-img" class="cv" style="cursor:pointer"></canvas></div>
         <div class="kn-op">×</div>
         <div><div class="tiny" style="font-weight:800">KERNEL w (9 weights)</div><canvas id="kn-ker" class="cv"></canvas></div>
         <div class="kn-op">=</div>
-        <div class="calc" id="kn-calc" style="min-width:15rem"></div>
-      </div>`;
+        <div class="calc" id="kn-calc" style="min-width:14rem"></div>
+        <div class="kn-op">→</div>
+        <div><div class="tiny" style="font-weight:800">FEATURE MAP (kernel slid everywhere, then ReLU)</div><canvas id="kn-map" class="cv"></canvas></div>
+      </div>
+      <div class="callout mt" id="kn-txt" style="font-size:.95rem"></div>`;
     const $ = (s) => root.querySelector(s);
-    const cvI = $('#kn-img'), cvK = $('#kn-ker');
+    const cvI = $('#kn-img'), cvK = $('#kn-ker'), cvM = $('#kn-map');
     const px = (r, c) => D.X[di * 64 + r * 8 + c];
     const f = (v) => (Math.abs(v - Math.round(v)) < 0.005 ? String(Math.round(v)) : v.toFixed(1));
     function draw() {
@@ -55,6 +65,13 @@
         rows += parts.join(' + ') + (i < 2 ? ' +' : '') + '<br>';
       }
       $('#kn-calc').innerHTML = '<span class="tiny">pixel values (0–16) × weights, summed:</span><br>' + rows + '= <span class="res">' + (sum * 16).toFixed(1) + '</span>';
+      // the whole feature map: the same kernel at all 6 x 6 positions, then ReLU
+      const fm = new Float32Array(36);
+      for (let r = 0; r < 6; r++) for (let c = 0; c < 6; c++) { let t = 0; for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) t += px(r + i, c + j) * k[i * 3 + j]; fm[r * 6 + c] = Math.max(0, t); }
+      const mc = 34, cm = U.fit(cvM, 6 * mc, 6 * mc), mx = Math.max(1e-6, ...fm);
+      for (let r = 0; r < 6; r++) for (let c = 0; c < 6; c++) { cm.fillStyle = U.ink(fm[r * 6 + c] / mx); cm.fillRect(c * mc, r * mc, mc - 1, mc - 1); }
+      cm.strokeStyle = '#2859e0'; cm.lineWidth = 3.5; cm.strokeRect(c0 * mc + 1.5, r0 * mc + 1.5, mc - 3, mc - 3);
+      $('#kn-txt').innerHTML = TXT[which];
     }
     cvI.addEventListener('pointerdown', (e) => { const p = U.pos(cvI, e), cs = cvI.clientWidth / 8; c0 = U.clamp(Math.floor(p.x / cs) - 1, 0, 5); r0 = U.clamp(Math.floor(p.y / cs) - 1, 0, 5); draw(); });
     root.querySelectorAll('#kn-w button').forEach((b) => b.addEventListener('click', () => { root.querySelectorAll('#kn-w button').forEach((x) => x.classList.remove('on')); b.classList.add('on'); which = b.dataset.w; draw(); }));
@@ -157,7 +174,7 @@
       { lvl: 'Last convolutional layers', what: 'whole objects (balls)', src: 'GoogLeNet · mixed5a', img: 'img/fv/mixed5a_9_optimized.png' },
     ];
     root.innerHTML = `<div class="hier-row">${cols.map((c, i) => `
-      <div class="hier-col step"><div class="hier-pic">${c.cv ? '<canvas id="hr-f"></canvas>' : `<img src="${c.img}" alt="Image synthesised to excite one unit of ${c.src}: ${c.what}">`}</div>
+      <div class="hier-col"><div class="hier-pic">${c.cv ? '<canvas id="hr-f"></canvas>' : `<img src="${c.img}" alt="Image synthesised to excite one unit of ${c.src}: ${c.what}">`}</div>
       <div class="tiny" style="font-weight:800;letter-spacing:.05em;color:var(--enc)">${c.lvl.toUpperCase()}</div><div style="font-weight:800">${c.what}</div><div class="tiny">${c.src}</div></div>`).join('')}</div>`;
     Deck.on('hier', () => {
       const cv = root.querySelector('#hr-f'), cs = 18, g = 4, w = 3 * cs * 3 + 2 * g * 2 + 2, h = 3 * cs * 2 + g;
