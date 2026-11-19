@@ -1,7 +1,7 @@
 /* Widgets for the representation-learning part
    1. par      : designed filters vs learned filters on the same digit        (slide "paradigm")
    2. routes   : two routes to learn a representation without labels          (slide "routes")
-   3. aediag   : autoencoder diagram with a bottleneck toggle                 (slide "aediag")
+   3. aediag   : autoencoder diagram with a bottleneck toggle                 (slides "aediag" and, without controls, "discgen")
    */
 (function () {
   'use strict';
@@ -92,13 +92,14 @@
   /* =================================================================
      3. AUTOENCODER DIAGRAM
      ================================================================= */
-  (function aediag() {
-    const root = document.getElementById('w-aediag'); if (!root) return;
+  ['w-aediag', 'w-aediag2'].forEach(function (rid) {
+    const root = document.getElementById(rid); if (!root) return;
+    const STATIC = root.dataset.mode === 'static';   // second copy (slide "from reconstruction to generation"): no controls
     const D = U.digits(); let di = 7, narrow = true;
     root.innerHTML = `
-      <div class="row" style="margin-bottom:.5rem;gap:.8rem"><div class="seg" id="ad-m"><button data-m="n" class="on">Narrow bottleneck: z has 2 numbers</button><button data-m="w">No bottleneck: z as wide as x</button></div><button class="btn small" id="ad-next">Another digit</button></div>
+      ${STATIC ? '' : `<div class="row" style="margin-bottom:.5rem;gap:.8rem"><div class="seg" id="ad-m"><button data-m="n" class="on">Narrow bottleneck: z has 2 numbers</button><button data-m="w">No bottleneck: z as wide as x</button></div><button class="btn small" id="ad-next">Another digit</button></div>`}
       <div class="card flat" style="padding:.6rem"><svg viewBox="0 0 860 300" style="width:100%;height:auto;display:block" role="img" aria-label="Autoencoder: image x goes through an encoder to a latent vector z, then through a decoder to a reconstruction x-hat; the loss compares x-hat with x.">
-        <defs><marker id="ad-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#667180"/></marker><marker id="ad-rh" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#c0392b"/></marker></defs>
+        <defs><marker id="ad-ah-${rid}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#667180"/></marker><marker id="ad-rh-${rid}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#c0392b"/></marker></defs>
         <image id="ad-x" x="20" y="60" width="110" height="110" style="image-rendering:pixelated"/><rect x="20" y="60" width="110" height="110" fill="none" stroke="#17202c" stroke-width="2"/>
         <text x="75" y="48" text-anchor="middle" font-weight="800" font-size="15">input x</text><text x="75" y="190" text-anchor="middle" font-size="11" fill="#555">64 numbers (8×8)</text>
         <polygon id="ad-enc" points="170,40 360,95 360,135 170,190" fill="#dff3ef" stroke="#0d8f7f" stroke-width="2.5"/><text x="265" y="120" text-anchor="middle" font-weight="800" fill="#0a6b5e" font-size="16">Encoder f</text><text x="265" y="140" text-anchor="middle" font-size="11" fill="#0a6b5e">compresses</text>
@@ -106,8 +107,8 @@
         <polygon id="ad-dec" points="500,95 500,135 690,190 690,40" fill="#ece5fa" stroke="#7c4fd6" stroke-width="2.5"/><text x="595" y="120" text-anchor="middle" font-weight="800" fill="#5b36a8" font-size="16">Decoder g</text><text x="595" y="140" text-anchor="middle" font-size="11" fill="#5b36a8">rebuilds</text>
         <image id="ad-xh" x="730" y="60" width="110" height="110" style="image-rendering:pixelated"/><rect x="730" y="60" width="110" height="110" fill="none" stroke="#17202c" stroke-width="2"/>
         <text x="785" y="48" text-anchor="middle" font-weight="800" font-size="15">output x̂</text><text x="785" y="190" text-anchor="middle" font-size="11" fill="#555">64 numbers</text>
-        <g stroke="#667180" stroke-width="2.5" marker-end="url(#ad-ah)"><line x1="132" y1="115" x2="168" y2="115"/><line x1="362" y1="115" x2="388" y2="115"/><line x1="472" y1="115" x2="498" y2="115"/><line x1="692" y1="115" x2="728" y2="115"/></g>
-        <path d="M785 200 L785 250 L75 250 L75 202" fill="none" stroke="#c0392b" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#ad-rh)"/>
+        <g stroke="#667180" stroke-width="2.5" marker-end="url(#ad-ah-${rid})"><line x1="132" y1="115" x2="168" y2="115"/><line x1="362" y1="115" x2="388" y2="115"/><line x1="472" y1="115" x2="498" y2="115"/><line x1="692" y1="115" x2="728" y2="115"/></g>
+        <path d="M785 200 L785 250 L75 250 L75 202" fill="none" stroke="#c0392b" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#ad-rh-${rid})"/>
         <rect x="270" y="236" width="320" height="28" rx="8" fill="#fff" stroke="#c0392b" stroke-width="2"/><text x="430" y="255" text-anchor="middle" font-weight="800" font-size="14" fill="#c0392b">loss: compare the output x̂ with the INPUT x</text>
         <text x="430" y="290" text-anchor="middle" font-size="12" font-weight="700" fill="#667180" id="ad-note"></text>
       </svg></div>`;
@@ -121,12 +122,15 @@
       $('#ad-z').innerHTML = z;
       $('#ad-enc').setAttribute('points', narrow ? '170,40 360,95 360,135 170,190' : '170,60 360,70 360,160 170,170');
       $('#ad-dec').setAttribute('points', narrow ? '500,95 500,135 690,190 690,40' : '500,70 500,160 690,170 690,60');
+      if (STATIC) { $('#ad-note').textContent = ''; return; }
       $('#ad-note').textContent = narrow ? 'The bottleneck forces the network to keep only what matters to rebuild the digit (sketch: the rebuilt image is drawn blurrier).' : 'Without a bottleneck the network can just copy x: the loss is ≈ 0, but z has learned nothing useful.';
     }
-    root.querySelectorAll('#ad-m button').forEach((b) => b.addEventListener('click', () => { root.querySelectorAll('#ad-m button').forEach((x) => x.classList.remove('on')); b.classList.add('on'); narrow = b.dataset.m === 'n'; draw(); }));
-    $('#ad-next').addEventListener('click', () => { di = (di * 7 + 13) % D.n; draw(); });
-    Deck.on('aediag', draw);
-  })();
+    if (!STATIC) {
+      root.querySelectorAll('#ad-m button').forEach((b) => b.addEventListener('click', () => { root.querySelectorAll('#ad-m button').forEach((x) => x.classList.remove('on')); b.classList.add('on'); narrow = b.dataset.m === 'n'; draw(); }));
+      $('#ad-next').addEventListener('click', () => { di = (di * 7 + 13) % D.n; draw(); });
+    }
+    Deck.on(root.closest('.slide').id, draw);
+  });
   /* =================================================================
      4. DECODING RANDOM LATENT VECTORS OF A REAL AUTOENCODER
      ================================================================= */
@@ -160,5 +164,12 @@
     }
     $('#br-again').addEventListener('click', () => { seed++; draw(); });
     let started = false; window.addEventListener('load', () => setTimeout(() => { if (!started) { started = true; start(); } }, 4000)); Deck.on('bridge', () => { if (!started) { started = true; setTimeout(start, 50); } else if (box) draw(); });
+  })();
+
+  /* digit shown on the "recognise" row of the slide "discgen" */
+  (function gi() {
+    const img = document.getElementById('gi-d'); if (!img) return;
+    const D = U.digits();
+    Deck.on('discgen', () => { img.setAttribute('href', digitURL(D.X.subarray(7 * 64, 7 * 64 + 64))); const l = document.getElementById('gi-l'); if (l) l.textContent = D.y[7]; });
   })();
 })();

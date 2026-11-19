@@ -441,7 +441,7 @@ ol.qs li::before { content: counter(q); position: absolute; left: .8rem; top: .5
 .ar-box.flat { background: #f1e7c9; border-color: #b69b3f; } .ar-box.dense { background: var(--accent-soft); border-color: var(--accent); }
 .ar-brace { display: flex; gap: .3rem; margin-top: .6rem; } .ar-brace > div { border-top: 4px solid; text-align: center; font-size: .72rem; font-weight: 800; padding-top: .25rem; letter-spacing: .04em; }
 .ex-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
-.ex-col { text-align: center; } .ex-col img { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); }
+.ex-col { text-align: center; } .ex-col img { width: auto; max-width: 100%; height: auto; max-height: 300px; object-fit: contain; border-radius: 10px; border: 1px solid var(--line); }
 .ex-bar { margin: .7rem 0; border-radius: 12px; background: var(--enc-soft); border: 3px solid var(--enc); padding: .6rem 1rem; text-align: center; font-weight: 800; color: #0a6b5e; }
 .ex-head { border-radius: 10px; background: var(--accent-soft); border: 2px solid var(--accent); padding: .45rem .6rem; font-weight: 700; font-size: .85rem; color: #1c3f9e; }
 .ex-arr { font-size: 1.6rem; color: var(--muted); line-height: 1; }
@@ -471,3 +471,18 @@ ol.qs li::before { content: counter(q); position: absolute; left: .8rem; top: .5
 .ga-up { position: absolute; left: 3.2rem; top: -.95rem; font-size: .9rem; }
 .slide .hands-on.wide { grid-template-columns: minmax(0, 1fr); }
 .br-imgs { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .3rem; }
+
+/* thank-you slide */
+.thx-card { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
+.thx-qr { width: 12rem; height: 12rem; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: .3rem; margin: .4rem 0; }
+.thx-pic { width: 100%; max-width: 30rem; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; margin: .4rem auto; }
+.ga-live { font-size: .9rem; }
+
+/* GAN Lab figures on the generative-models slide */
+.gl-fig { width: 100%; height: auto; display: block; border-radius: 8px; background: #fff; }
+
+/* slide "from reconstruction to generation" */
+.gi { display: flex; flex-direction: column; gap: .5rem; }
+.gi-row { display: grid; grid-template-columns: minmax(0,34rem) minmax(0,1fr); gap: 1.2rem; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: .5rem .8rem; }
+.gi-row.gen { border-left: 4px solid var(--accent-2, #e8712d); }
+.gi-row svg { width: 100%; height: auto; display: block; }

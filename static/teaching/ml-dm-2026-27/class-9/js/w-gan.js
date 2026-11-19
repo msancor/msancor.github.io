@@ -1,7 +1,7 @@
 /* A real, tiny GAN trained in the browser on the 8x8 handwritten digits (one class at a time).
    Generator: z (4 numbers) -> 24 tanh units -> 64 pixels (sigmoid).  Discriminator: 64 pixels -> 24 leaky-ReLU units -> 1 (sigmoid).
    Plain SGD-style training with Adam (lr 0.002, beta1 0.5), batches of 32, non-saturating generator loss. Manual backpropagation.
-   Used by two slides:  #w-ganarch (architecture, before / after training)  and  #w-gantrain (how the images improve over time). */
+   Used by the slide #ganarch: the architecture diagram is trained live, and the fake images improve step by step. */
 (function () {
   'use strict';
   const ZD = 4, H = 24, B = 32;
@@ -79,19 +79,25 @@
   const sc = (p) => `<span style="color:${p > 0.5 ? '#1f8a4c' : '#8e44ad'};font-weight:800">${p.toFixed(2)}</span>`;
 
   /* =================================================================
-     ARCHITECTURE with real pictures (before / after training)
+     ARCHITECTURE with real pictures, trained live: the fakes improve step by step
      ================================================================= */
   (function arch() {
     const root = document.getElementById('w-ganarch'); if (!root) return;
-    let gan = null, stage = 0;
+    let gan = null, timer = null, zc = null, rl = null;
+    const MAXSTEP = 2000;
     root.innerHTML = `
-      <div class="row" style="margin-bottom:.5rem;gap:.7rem"><button class="btn" id="ga-un">Untrained G</button><button class="btn primary" id="ga-tr">Train 1,500 steps ▸</button><button class="btn small" id="ga-nz">New noise &amp; new real images</button><span class="small" id="ga-st"></span></div>
-      <div class="card flat" style="padding:.5rem"><svg id="ga-svg" viewBox="0 0 900 340" style="width:100%;height:auto;display:block;image-rendering:pixelated" role="img" aria-label="GAN diagram: noise vectors go into the generator, which produces fake images; real images come from the dataset; both go into the discriminator, which says real or fake; the discriminator's verdict is fed back to the generator."></svg></div>`;
+      <div class="row" style="margin-bottom:.5rem;gap:.7rem"><button class="btn primary" id="ga-run">▶ Train G and D</button><button class="btn" id="ga-un">Reset (untrained G)</button><span class="small" id="ga-st"></span></div>
+      <div class="card flat" style="padding:.5rem"><svg id="ga-svg" viewBox="0 0 900 350" style="width:100%;height:auto;display:block;image-rendering:pixelated" role="img" aria-label="GAN diagram: noise vectors go into the generator, which produces fake images; real images come from the dataset; both go into the discriminator, which says real or fake; the discriminator's verdict is fed back to the generator."></svg>
+        <div class="row" style="gap:.6rem;margin-top:.3rem;align-items:center"><span class="tiny" style="font-weight:800">The first fake, same noise, at training step:</span><div class="gt-imgs" id="ga-sn" style="margin:0;gap:.5rem"></div></div></div>`;
     const $ = (s) => root.querySelector(s);
-    const url = (arr, blur) => { const c = document.createElement('canvas'); c.width = c.height = 8; const x = c.getContext('2d'); for (let i = 0; i < 64; i++) { const v = Math.round(255 * (1 - U.clamp(arr[i], 0, 1))); x.fillStyle = `rgb(${v},${v},${v})`; x.fillRect(i % 8, Math.floor(i / 8), 1, 1); } return c.toDataURL(); };
+    const url = (arr) => { const c = document.createElement('canvas'); c.width = c.height = 8; const x = c.getContext('2d'); for (let i = 0; i < 64; i++) { const v = Math.round(255 * (1 - U.clamp(arr[i], 0, 1))); x.fillStyle = `rgb(${v},${v},${v})`; x.fillRect(i % 8, Math.floor(i / 8), 1, 1); } return c.toDataURL(); };
     const scTxt = (p) => `<tspan fill="${p > 0.5 ? '#1f8a4c' : '#8e44ad'}" font-weight="800">${p.toFixed(2)}</tspan>`;
+    function snaps() {
+      const box = $('#ga-sn'); box.innerHTML = '';
+      gan.snaps.forEach((sn) => { const w = document.createElement('div'); w.style.textAlign = 'center'; w.innerHTML = '<canvas></canvas><div class="tiny">' + sn.step + '</div>'; box.appendChild(w); paint(w.querySelector('canvas'), sn.img, 5); });
+    }
     function show() {
-      const n = 4, z = gan.noise(n), fk = gan.sample(z, n), rl = gan.realImgs(n), sf = gan.score(fk, n), sr = gan.score(rl, n);
+      const n = 4, fk = gan.sample(zc, n), sf = gan.score(fk, n), sr = gan.score(rl, n), z = zc;
       let s = `<defs><marker id="gx" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#667180"/></marker><marker id="go" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#e8712d"/></marker></defs>`;
       // top lane: noise -> G -> fakes
       s += `<text x="20" y="58" font-size="12" font-weight="800" fill="#3d4856">random noise z</text>`;
@@ -101,59 +107,35 @@
       s += `<rect x="166" y="56" width="136" height="80" rx="12" fill="#fdeadd" stroke="#e8712d" stroke-width="3"/><text x="234" y="92" text-anchor="middle" font-weight="800" font-size="15" fill="#a14a12">Generator G</text><text x="234" y="112" text-anchor="middle" font-size="10.5" fill="#a14a12">noise → image</text>`;
       s += `<line x1="302" y1="96" x2="344" y2="96" stroke="#667180" stroke-width="2.5" marker-end="url(#gx)"/>`;
       s += `<text x="350" y="58" font-size="12" font-weight="800" fill="#3d4856">fake images G(z)</text>`;
-      for (let i = 0; i < n; i++) s += `<image href="${url(fk.subarray(i * 64, i * 64 + 64))}" x="${350 + i * 60}" y="68" width="54" height="54" style="image-rendering:pixelated"/><rect x="${350 + i * 60}" y="68" width="54" height="54" fill="none" stroke="#17202c55"/><text x="${377 + i * 60}" y="140" text-anchor="middle" font-size="12">${scTxt(sf[i])}</text>`;
+      for (let i = 0; i < n; i++) {
+        const lg = -Math.log(sf[i] + 1e-8);
+        s += `<image href="${url(fk.subarray(i * 64, i * 64 + 64))}" x="${350 + i * 60}" y="68" width="54" height="54" style="image-rendering:pixelated"/><rect x="${350 + i * 60}" y="68" width="54" height="54" fill="none" stroke="#17202c55"/><text x="${377 + i * 60}" y="138" text-anchor="middle" font-size="11.5">D=${scTxt(sf[i])}</text><text x="${377 + i * 60}" y="153" text-anchor="middle" font-size="11.5" fill="#c05a14" font-weight="800">L<tspan font-size="8" dy="3">G</tspan><tspan dy="-3"> = ${lg.toFixed(2)}</tspan></text>`;
+      }
       // bottom lane: dataset -> real images
-      s += `<rect x="14" y="214" width="140" height="56" rx="10" fill="#e9e6dc" stroke="#b9b49f"/><text x="84" y="238" text-anchor="middle" font-weight="800" font-size="12.5">training dataset</text><text x="84" y="256" text-anchor="middle" font-size="10.5" fill="#555">1,000 real digits</text>`;
-      s += `<line x1="152" y1="242" x2="344" y2="242" stroke="#667180" stroke-width="2.5" marker-end="url(#gx)"/><text x="248" y="232" text-anchor="middle" font-size="11" fill="#667180">random batch</text>`;
-      s += `<text x="350" y="204" font-size="12" font-weight="800" fill="#3d4856">real images x</text>`;
-      for (let i = 0; i < n; i++) s += `<image href="${url(rl.subarray(i * 64, i * 64 + 64))}" x="${350 + i * 60}" y="214" width="54" height="54" style="image-rendering:pixelated"/><rect x="${350 + i * 60}" y="214" width="54" height="54" fill="none" stroke="#17202c55"/><text x="${377 + i * 60}" y="286" text-anchor="middle" font-size="12">${scTxt(sr[i])}</text>`;
+      s += `<rect x="14" y="224" width="140" height="56" rx="10" fill="#e9e6dc" stroke="#b9b49f"/><text x="84" y="248" text-anchor="middle" font-weight="800" font-size="12.5">training dataset</text><text x="84" y="266" text-anchor="middle" font-size="10.5" fill="#555">real digits (zeros)</text>`;
+      s += `<line x1="152" y1="252" x2="344" y2="252" stroke="#667180" stroke-width="2.5" marker-end="url(#gx)"/><text x="248" y="242" text-anchor="middle" font-size="11" fill="#667180">random batch</text>`;
+      s += `<text x="350" y="214" font-size="12" font-weight="800" fill="#3d4856">real images x</text>`;
+      for (let i = 0; i < n; i++) s += `<image href="${url(rl.subarray(i * 64, i * 64 + 64))}" x="${350 + i * 60}" y="224" width="54" height="54" style="image-rendering:pixelated"/><rect x="${350 + i * 60}" y="224" width="54" height="54" fill="none" stroke="#17202c55"/><text x="${377 + i * 60}" y="296" text-anchor="middle" font-size="11.5">D=${scTxt(sr[i])}</text>`;
       // converge into D
-      s += `<path d="M596 95 H632 V158 H654" fill="none" stroke="#667180" stroke-width="2.5" marker-end="url(#gx)"/><path d="M596 241 H632 V184 H654" fill="none" stroke="#667180" stroke-width="2.5" marker-end="url(#gx)"/>`;
-      s += `<rect x="658" y="130" width="200" height="82" rx="12" fill="#e6edfd" stroke="#2859e0" stroke-width="3"/><text x="758" y="166" text-anchor="middle" font-weight="800" font-size="16" fill="#1c3f9e">Discriminator D</text><text x="758" y="186" text-anchor="middle" font-size="10.5" fill="#1c3f9e">image → probability “real”</text>`;
-      s += `<line x1="758" y1="214" x2="758" y2="256" stroke="#667180" stroke-width="2.5" marker-end="url(#gx)"/><rect x="658" y="260" width="200" height="70" rx="10" fill="#fff" stroke="#2859e0" stroke-width="2"/><text x="758" y="280" text-anchor="middle" font-weight="800" font-size="14">real or fake?</text><text x="758" y="298" text-anchor="middle" font-size="10" fill="#667180">the number under each image</text><text x="758" y="312" text-anchor="middle" font-size="10" fill="#667180">is D’s probability “real”</text>`;
+      s += `<path d="M596 95 H632 V168 H654" fill="none" stroke="#667180" stroke-width="2.5" marker-end="url(#gx)"/><path d="M596 251 H632 V194 H654" fill="none" stroke="#667180" stroke-width="2.5" marker-end="url(#gx)"/>`;
+      s += `<rect x="658" y="140" width="200" height="82" rx="12" fill="#e6edfd" stroke="#2859e0" stroke-width="3"/><text x="758" y="176" text-anchor="middle" font-weight="800" font-size="16" fill="#1c3f9e">Discriminator D</text><text x="758" y="196" text-anchor="middle" font-size="10.5" fill="#1c3f9e">image → probability “real”</text>`;
+      s += `<line x1="758" y1="224" x2="758" y2="266" stroke="#667180" stroke-width="2.5" marker-end="url(#gx)"/><rect x="658" y="270" width="200" height="70" rx="10" fill="#fff" stroke="#2859e0" stroke-width="2"/><text x="758" y="290" text-anchor="middle" font-weight="800" font-size="14">real or fake?</text><text x="758" y="308" text-anchor="middle" font-size="10" fill="#667180">D = D’s probability “real”</text><text x="758" y="322" text-anchor="middle" font-size="10" fill="#667180">(1 = sure it is real)</text>`;
       // feedback
-      s += `<path d="M758 128 V24 H235 V54" fill="none" stroke="#e8712d" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#go)"/><text x="496" y="17" text-anchor="middle" font-size="11.5" font-weight="800" fill="#e8712d">feedback: D’s verdict is the only signal G receives (G never sees real images)</text>`;
+      s += `<path d="M758 138 V24 H235 V54" fill="none" stroke="#e8712d" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#go)"/><text x="496" y="17" text-anchor="middle" font-size="11.5" font-weight="800" fill="#e8712d">feedback: D’s verdict is the only signal G receives (G never sees real images)</text>`;
       $('#ga-svg').innerHTML = s;
-      $('#ga-st').textContent = gan.step === 0 ? 'Untrained: G outputs blobs and D has no opinion yet (≈ 0.5).' : 'After ' + gan.step.toLocaleString('en-US') + ' training steps: the fakes look like zeros, and D can no longer tell (≈ 0.5).';
+      const ml = -sf.reduce((a, p) => a + Math.log(p + 1e-8), 0) / n;
+      $('#ga-st').innerHTML = gan.step === 0 ? 'Untrained: G outputs noise-like blobs. L<sub>G</sub> = −log D(G(z)) is the “surprise” of G when D rejects its fake: the lower D’s probability, the higher the loss.' : '<b>Step ' + gan.step.toLocaleString('en-US') + ' / ' + MAXSTEP.toLocaleString('en-US') + '</b>: the fakes improve and D’s probability for them approaches 0.5 (D can only guess), so L<sub>G</sub> approaches 0.69 (average of these four: ' + ml.toFixed(2) + ').';
+      snaps();
     }
-    function reset() { gan = MiniGAN(0, 7); show(); }
+    function stop() { clearInterval(timer); timer = null; $('#ga-run').textContent = gan && gan.step > 0 && gan.step < MAXSTEP ? '▶ Resume' : '▶ Train G and D'; }
+    function reset() { stop(); gan = MiniGAN(0, 7); zc = gan.fixedZ.slice(0, 4 * ZD); rl = gan.realImgs(4); $('#ga-run').textContent = '▶ Train G and D'; $('#ga-run').disabled = false; show(); }
+    $('#ga-run').addEventListener('click', () => {
+      if (timer) { stop(); return; }
+      if (gan.step >= MAXSTEP) reset();
+      $('#ga-run').textContent = '❚❚ Pause';
+      timer = setInterval(() => { gan.train(12); show(); if (gan.step >= MAXSTEP) { stop(); $('#ga-run').textContent = '▶ Train again'; } }, 70);
+    });
     $('#ga-un').addEventListener('click', reset);
-    $('#ga-tr').addEventListener('click', () => { if (gan.step === 0) { gan.train(1500); show(); } });
-    $('#ga-nz').addEventListener('click', show);
-    Deck.on('ganarch', () => { reset(); });
-  })();
-
-  /* =================================================================
-     HOW THE IMAGES GET BETTER OVER TIME
-     ================================================================= */
-  (function train() {
-    const root = document.getElementById('w-gantrain'); if (!root) return;
-    let gan = null, cls = 0, timer = null;
-    const MARKS = [0, 25, 100, 300, 1000, 2000];
-    root.innerHTML = `
-      <div class="row" style="margin-bottom:.6rem;gap:.7rem">
-        <label class="ctl" style="margin:0">Real data<div class="seg" id="gt-c"><button data-c="0" class="on">zeros</button><button data-c="3">threes</button><button data-c="7">sevens</button></div></label>
-        <span class="spacer"></span><button class="btn primary" id="gt-run">▶ Train</button><button class="btn small" id="gt-reset">Reset</button>
-      </div>
-      <div class="gt1">
-        <div class="gt-p"><div class="gt-h">The same noise vector z, over training <span class="tiny" style="font-weight:500">(number = training steps)</span></div><div class="gt-imgs" id="gt-snaps"></div></div>
-        <div class="gt-p"><div class="gt-h">Sixteen new fakes <span id="gt-n" style="float:right;font-weight:600;color:var(--muted)"></span></div><div class="gt-imgs gt-wrap" id="gt-smp"></div>
-          <div class="tiny" id="gt-l" style="margin-top:.3rem"></div></div>
-        <div class="gt-p"><div class="gt-h">For comparison: real digits</div><div class="gt-imgs gt-wrap" id="gt-real"></div></div>
-      </div>`;
-    const $ = (s) => root.querySelector(s);
-    function tiles(box, arr, n, cs, labels) { box.innerHTML = ''; for (let i = 0; i < n; i++) { const w = document.createElement('div'); w.innerHTML = '<canvas></canvas>' + (labels ? '<div class="tiny" style="text-align:center">' + labels[i] + '</div>' : ''); box.appendChild(w); paint(w.querySelector('canvas'), arr.subarray ? arr.subarray(i * 64, (i + 1) * 64) : arr[i], cs); } }
-    function views() {
-      const sn = gan.snaps, box = $('#gt-snaps'); box.innerHTML = ''; sn.forEach((s) => { const w = document.createElement('div'); w.innerHTML = '<canvas></canvas><div class="tiny" style="text-align:center">' + s.step + '</div>'; box.appendChild(w); paint(w.querySelector('canvas'), s.img, 8); });
-      const z = gan.noise(16), smp = gan.sample(z, 16); tiles($('#gt-smp'), smp, 16, 6);
-      $('#gt-n').textContent = gan.step.toLocaleString('en-US') + ' steps';
-      const h = gan.hist, n = h.lD.length; if (n) { const a = (arr) => arr.slice(-20).reduce((x, y) => x + y, 0) / Math.min(20, arr.length); $('#gt-l').innerHTML = 'Discriminator loss ' + a(h.lD).toFixed(2) + ' · generator loss ' + a(h.lG).toFixed(2) + ' (recent average; D’s loss tends to 1.39 when it can only guess)'; } else $('#gt-l').textContent = '';
-    }
-    function reset() { stop(); gan = MiniGAN(cls, 3 + cls); const r = gan.realImgs(16); tiles($('#gt-real'), r, 16, 6); views(); }
-    function stop() { clearInterval(timer); timer = null; $('#gt-run').textContent = '▶ Train'; }
-    $('#gt-run').addEventListener('click', () => { if (timer) { stop(); return; } $('#gt-run').textContent = '❚❚ Pause'; timer = setInterval(() => { gan.train(12); views(); if (gan.step >= 2400) stop(); }, 60); });
-    $('#gt-reset').addEventListener('click', reset);
-    root.querySelectorAll('#gt-c button').forEach((b) => b.addEventListener('click', () => { root.querySelectorAll('#gt-c button').forEach((x) => x.classList.remove('on')); b.classList.add('on'); cls = +b.dataset.c; reset(); }));
-    Deck.on('gantrain', () => { if (!gan) reset(); else { stop(); views(); } });
+    Deck.on('ganarch', (s, resized) => { if (!resized) reset(); else show(); });
   })();
 })();
