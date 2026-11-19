@@ -477,12 +477,3 @@ ol.qs li::before { content: counter(q); position: absolute; left: .8rem; top: .5
 .thx-qr { width: 12rem; height: 12rem; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: .3rem; margin: .4rem 0; }
 .thx-pic { width: 100%; max-width: 30rem; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; margin: .4rem auto; }
 .ga-live { font-size: .9rem; }
-
-/* GAN Lab figures on the generative-models slide */
-.gl-fig { width: 100%; height: auto; display: block; border-radius: 8px; background: #fff; }
-
-/* slide "from reconstruction to generation" */
-.gi { display: flex; flex-direction: column; gap: .5rem; }
-.gi-row { display: grid; grid-template-columns: minmax(0,34rem) minmax(0,1fr); gap: 1.2rem; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: .5rem .8rem; }
-.gi-row.gen { border-left: 4px solid var(--accent-2, #e8712d); }
-.gi-row svg { width: 100%; height: auto; display: block; }
