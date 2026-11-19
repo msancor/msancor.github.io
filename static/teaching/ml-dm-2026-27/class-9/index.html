@@ -14,7 +14,7 @@
 <link rel="apple-touch-icon" href="img/site-icon.png">
 <link rel="icon" type="image/png" href="img/site-icon.png">
 <link rel="stylesheet" href="vendor/katex/katex.min.css">
-<link rel="stylesheet" href="css/style.css?v=16">
+<link rel="stylesheet" href="css/style.css?v=17">
 </head>
 <body>
 
@@ -416,48 +416,10 @@
   </div>
 </section>
 
-<section class="slide" id="discgen" data-sec="gan" data-title="From reconstruction to generation">
-  <div class="wrap">
-    <div class="kicker">Part IV · Generative models</div>
-    <h2>We know how to reconstruct an image. What about generating a new one?</h2>
-    <div class="gi mt">
-      <div class="gi-row">
-        <svg viewBox="0 0 560 130" role="img" aria-label="Recognise: an image goes into a CNN classifier and a label comes out."><defs><marker id="gi-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#667180"/></marker></defs>
-          <image id="gi-d" x="10" y="12" width="84" height="84" style="image-rendering:pixelated"/><rect x="10" y="12" width="84" height="84" fill="none" stroke="#17202c" stroke-width="2"/>
-          <line x1="100" y1="54" x2="146" y2="54" stroke="#667180" stroke-width="2.5" marker-end="url(#gi-ah)"/>
-          <rect x="150" y="22" width="150" height="64" rx="10" fill="#e6edfd" stroke="#2859e0" stroke-width="2.5"/><text x="225" y="60" text-anchor="middle" font-weight="800" font-size="15" fill="#1c3f9e">CNN classifier</text>
-          <line x1="304" y1="54" x2="350" y2="54" stroke="#667180" stroke-width="2.5" marker-end="url(#gi-ah)"/>
-          <rect x="354" y="22" width="70" height="64" rx="10" fill="#fff" stroke="#17202c" stroke-width="2.5"/><text id="gi-l" x="389" y="67" text-anchor="middle" font-weight="800" font-size="38">2</text>
-          <text x="52" y="116" text-anchor="middle" font-size="11" fill="#555">complex input</text><text x="389" y="116" text-anchor="middle" font-size="11" fill="#555">simple output: a label</text>
-        </svg>
-        <div><h3 style="color:#1c3f9e">Recognise: discriminative</h3><p class="small" style="color:var(--ink-2)">Image in, label out. The model learns the <b>boundary</b> between classes, \(p(y\mid x)\).</p></div>
-      </div>
-      <div class="gi-row gen">
-        <svg viewBox="0 0 560 130" role="img" aria-label="Generate: a few random numbers go into a generator and a new image comes out."><defs><marker id="gi-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#667180"/></marker></defs>
-          <g stroke="#17202c" stroke-width="2"><rect x="14" y="24" width="18" height="62" rx="4" fill="#e8712d"/><rect x="36" y="24" width="18" height="62" rx="4" fill="#2859e0"/><rect x="58" y="24" width="18" height="62" rx="4" fill="#1f8a4c"/><rect x="80" y="24" width="18" height="62" rx="4" fill="#8e44ad"/></g>
-          <line x1="104" y1="54" x2="146" y2="54" stroke="#667180" stroke-width="2.5" marker-end="url(#gi-ah)"/>
-          <rect x="150" y="22" width="150" height="64" rx="10" fill="#fdeadd" stroke="#e8712d" stroke-width="2.5"/><text x="225" y="55" text-anchor="middle" font-weight="800" font-size="15" fill="#a14a12">generator</text><text x="225" y="73" text-anchor="middle" font-size="11" fill="#a14a12">(not built yet)</text>
-          <line x1="304" y1="54" x2="346" y2="54" stroke="#667180" stroke-width="2.5" marker-end="url(#gi-ah)"/>
-          <g fill="#fff" stroke="#e8712d" stroke-width="2.5" stroke-dasharray="6 4"><rect x="350" y="22" width="64" height="64" rx="8"/><rect x="424" y="22" width="64" height="64" rx="8"/><rect x="498" y="22" width="56" height="64" rx="8"/></g>
-          <g font-weight="800" font-size="30" fill="#e8712d" text-anchor="middle"><text x="382" y="64">?</text><text x="456" y="64">?</text><text x="526" y="64">?</text></g>
-          <text x="56" y="116" text-anchor="middle" font-size="11" fill="#555">a few random numbers z</text><text x="452" y="116" text-anchor="middle" font-size="11" fill="#555">new images: different z, different image</text>
-        </svg>
-        <div><h3 style="color:#a14a12">Generate: generative</h3><p class="small" style="color:var(--ink-2)">A few <b>random numbers</b> in, a <b>new</b> image out that looks like the training images. The model learns how the data are <b>distributed</b>, \(p(x)\), so that we can sample from it.</p></div>
-      </div>
-      <div class="gi-row" style="grid-template-columns:minmax(0,34rem) minmax(0,1fr);align-items:center">
-        <img class="gl-fig" src="img/ganlab/figure-generator-transformation.png" alt="GAN Lab figure: a cloud of random input points is transformed by a generator into points that form a ring, like the real data.">
-        <p class="small" style="color:var(--ink-2)"><b>The same idea in 2-D</b> (figure from GAN Lab): random input points go in, and the generator turns them into points that look like the real data. The goal is not to copy any training example, but to produce new ones from the same distribution.</p>
-      </div>
-    </div>
-    <div class="callout mt" style="font-size:1rem"><b>What we need</b> is a network that turns a random vector into a realistic image. We already know one that turns a vector into an image: the decoder of an autoencoder. Is it enough?</div>
-    <div class="src"><b>Sources</b>Discriminative vs generative: Ng &amp; Jordan (2001); Goodfellow et al. (2016) ch. 20 and Goodfellow (2016), <i>NIPS tutorial: GANs</i> §1–2. Framing (a classifier maps a complex input to a simple output, a generative model the reverse) and figure: Kahng et al. (2019), <i>GAN Lab</i>, <a href="https://poloclub.github.io/ganlab/" target="_blank" rel="noopener">poloclub.github.io/ganlab</a>, Apache License 2.0, unmodified. The digit is from the UCI 8×8 data (Alpaydin &amp; Kaynak); the generator is not built yet.</div>
-  </div>
-</section>
-
 <section class="slide" id="recgen" data-sec="gan" data-title="Reconstruction versus generation">
   <div class="wrap">
     <div class="kicker">Part IV · Generative models</div>
-    <h2>An autoencoder already produces images from latent vectors. Isn’t that what generation needs?</h2>
+    <h2>We know how to reconstruct an image. What about generating a new one?</h2>
     <div class="card flat mt" style="padding:.7rem">
       <svg viewBox="0 0 860 250" style="width:100%;height:auto" role="img" aria-label="Top: reconstruction; an image goes through the encoder and decoder and the output is compared with the same image. Bottom: generation; a sample from a known latent distribution goes through the decoder and gives a new plausible image.">
         <defs><marker id="rg-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#667180"/></marker></defs>
@@ -597,7 +559,7 @@
     <ol class="qs mt" style="counter-reset: q 12">
       <li>What is representation learning (mapping data to vectors), and how does it differ from feature engineering?</li>
       <li>Why learn representations? Explain transfer learning and fine-tuning.</li>
-      <li>What is the difference between discriminative and generative modelling, and between reconstruction and generation?</li>
+      <li>What is the difference between reconstruction and generation, and why does generation have no original image to compare with?</li>
       <li>How can a representation be learned without labels? Contrast compression and prediction.</li>
       <li>What are the roles of the encoder, the decoder and the bottleneck in an autoencoder, and what does its loss compare?</li>
       <li>Why is the decoder of a standard autoencoder not automatically a reliable generator, and what question does this motivate?</li>
@@ -649,7 +611,6 @@
       <p>He, K., Chen, X., Xie, S., Li, Y., Dollár, P., &amp; Girshick, R. (2022). Masked autoencoders are scalable vision learners. <i>CVPR</i>.</p>
       <p>Mikolov, T., Chen, K., Corrado, G., &amp; Dean, J. (2013). Efficient estimation of word representations in vector space. arXiv:1301.3781.</p>
       <h4>Generative models, GANs and other architectures</h4>
-      <p>Ng, A. Y., &amp; Jordan, M. I. (2001). On discriminative vs. generative classifiers: A comparison of logistic regression and naive Bayes. <i>NeurIPS</i>, 14.</p>
       <p>Elman, J. L. (1990). Finding structure in time. <i>Cognitive Science</i>, 14(2), 179–211.</p>
       <p>Hochreiter, S., &amp; Schmidhuber, J. (1997). Long short-term memory. <i>Neural Computation</i>, 9(8), 1735–1780.</p>
       <p>Vaswani, A., et al. (2017). Attention is all you need. <i>NeurIPS</i>, 30.</p>
@@ -676,7 +637,7 @@
 <script src="js/common.js?v=9"></script>
 <script src="data/digits.js?v=8"></script>
 <script src="data/cnn.js?v=1"></script>
-<script src="js/deck.js?v=16"></script>
+<script src="js/deck.js?v=17"></script>
 <script src="js/w-mlp.js?v=8"></script>
 <script src="js/w-why.js?v=9"></script>
 <script src="js/w-intro.js?v=12"></script>
@@ -684,7 +645,7 @@
 <script src="js/w-rf.js?v=8"></script>
 <script src="js/w-cnn2.js?v=7"></script>
 <script src="js/w-ae.js?v=10"></script>
-<script src="js/w-rep.js?v=8"></script>
+<script src="js/w-rep.js?v=9"></script>
 <script src="js/w-gan.js?v=7"></script>
 </body>
 </html>

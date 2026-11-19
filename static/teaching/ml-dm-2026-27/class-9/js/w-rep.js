@@ -1,7 +1,7 @@
 /* Widgets for the representation-learning part
    1. par      : designed filters vs learned filters on the same digit        (slide "paradigm")
    2. routes   : two routes to learn a representation without labels          (slide "routes")
-   3. aediag   : autoencoder diagram with a bottleneck toggle                 (slides "aediag" and, without controls, "discgen")
+   3. aediag   : autoencoder diagram with a bottleneck toggle                 (slide "aediag")
    */
 (function () {
   'use strict';
@@ -166,10 +166,4 @@
     let started = false; window.addEventListener('load', () => setTimeout(() => { if (!started) { started = true; start(); } }, 4000)); Deck.on('bridge', () => { if (!started) { started = true; setTimeout(start, 50); } else if (box) draw(); });
   })();
 
-  /* digit shown on the "recognise" row of the slide "discgen" */
-  (function gi() {
-    const img = document.getElementById('gi-d'); if (!img) return;
-    const D = U.digits();
-    Deck.on('discgen', () => { img.setAttribute('href', digitURL(D.X.subarray(7 * 64, 7 * 64 + 64))); const l = document.getElementById('gi-l'); if (l) l.textContent = D.y[7]; });
-  })();
 })();
